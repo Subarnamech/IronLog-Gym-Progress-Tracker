@@ -108,6 +108,102 @@
   .sync-dot.syncing{background:var(--ember); animation:pulse 1s infinite;}
   @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.3;}}
 
+  /* ---- Tabs ---- */
+  .main-tabs{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--hairline); flex-wrap:wrap;}
+  .main-tab{
+    background:transparent; border:none; color:var(--chalk-dim); font-family:'Bebas Neue',sans-serif;
+    font-size:18px; letter-spacing:1px; padding:10px 4px 12px; cursor:pointer; position:relative; top:1px;
+    border-bottom:2px solid transparent;
+  }
+  .main-tab.active{color:var(--ember); border-bottom-color:var(--ember);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  /* ---- Streak card ---- */
+  .streak-card{
+    display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    background:var(--steel); border:1px solid var(--hairline); border-left:3px solid var(--ember);
+    border-radius:10px; padding:16px 20px; margin-bottom:20px;
+  }
+  .streak-main{display:flex; align-items:center; gap:14px;}
+  .streak-num{font-family:'Bebas Neue',sans-serif; font-size:40px; color:var(--ember); line-height:1;}
+  .streak-num span{font-size:14px; color:var(--chalk-dim); font-family:'Inter',sans-serif; display:block; letter-spacing:0.5px; margin-top:2px;}
+  .streak-msg{font-size:14px; color:var(--chalk); max-width:420px; line-height:1.4;}
+  .streak-card .ghost-btn{flex:none;}
+
+  /* ---- How-to tab ---- */
+  .howto-card{max-width:760px;}
+  .howto-card h3{font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; color:var(--ember); margin:22px 0 8px;}
+  .howto-card h3:first-child{margin-top:0;}
+  .howto-card p, .howto-card li{color:var(--chalk-dim); font-size:14px; line-height:1.7;}
+  .howto-card ul{padding-left:20px; margin-top:4px;}
+  .howto-card b{color:var(--chalk);}
+
+  /* ---- Transformation tab ---- */
+  .transform-controls{
+    display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; margin-bottom:24px;
+  }
+  .transform-controls .field{min-width:160px;}
+  .transform-controls label{margin-top:0;}
+  .upload-btn{
+    background:var(--ember); color:#181818; border:none; padding:11px 18px; border-radius:6px;
+    font-weight:700; font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .transform-view-toggle{display:flex; gap:6px;}
+  .photo-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;}
+  .photo-tile{
+    position:relative; background:var(--steel-2); border:1px solid var(--hairline); border-radius:8px;
+    overflow:hidden; aspect-ratio:3/4;
+  }
+  .photo-tile img{width:100%; height:100%; object-fit:cover; display:block;}
+  .photo-tile .photo-date{
+    position:absolute; left:0; right:0; bottom:0; background:linear-gradient(transparent, rgba(0,0,0,.8));
+    color:var(--chalk); font-size:11px; padding:14px 8px 6px; font-family:'JetBrains Mono',monospace;
+  }
+  .photo-tile .photo-del{
+    position:absolute; top:6px; right:6px; background:rgba(20,20,23,.75); border:1px solid var(--hairline);
+    color:var(--chalk-dim); width:24px; height:24px; border-radius:5px; cursor:pointer; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .photo-tile .photo-del:hover{color:#ff9a9a; border-color:#6b2f2f;}
+  .interval-strip{display:flex; gap:14px; overflow-x:auto; padding-bottom:8px;}
+  .interval-strip .photo-tile{min-width:150px; flex:none;}
+  .photo-tile{cursor:zoom-in;}
+
+  /* ---- Status strip (location/time) ---- */
+  .status-strip{
+    display:flex; gap:8px; align-items:center; color:var(--chalk-dim); font-size:12px;
+    font-family:'JetBrains Mono',monospace; margin-bottom:20px; flex-wrap:wrap;
+  }
+  .status-sep{opacity:.5;}
+
+  /* ---- Photo lightbox ---- */
+  .lightbox{
+    position:fixed; inset:0; background:rgba(10,10,12,.92); z-index:300;
+    display:flex; align-items:center; justify-content:center; padding:40px;
+  }
+  .lightbox.hidden{display:none;}
+  .lightbox img{max-width:90vw; max-height:80vh; object-fit:contain; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .lightbox-caption{position:absolute; bottom:28px; left:0; right:0; text-align:center; color:var(--chalk-dim); font-size:13px; font-family:'JetBrains Mono',monospace;}
+  .lightbox-close{position:absolute; top:20px; right:28px; background:none; border:none; color:var(--chalk); font-size:28px; cursor:pointer; line-height:1;}
+  .lightbox-nav{
+    position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.08); border:1px solid var(--hairline);
+    color:var(--chalk); width:48px; height:48px; border-radius:50%; font-size:22px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .lightbox-nav:hover{background:var(--ember); border-color:var(--ember); color:#181818;}
+  .lightbox-nav.prev{left:24px;}
+  .lightbox-nav.next{right:24px;}
+
+  /* ---- Photo reminder banner ---- */
+  .photo-reminder{
+    background:linear-gradient(135deg, #2a1810, var(--steel)); border:1px solid var(--ember);
+    border-radius:10px; padding:16px 20px; margin-bottom:20px; display:flex; align-items:center;
+    justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .photo-reminder.hidden{display:none;}
+  .photo-reminder p{font-size:14px; color:var(--chalk); line-height:1.4; margin:0;}
+  .photo-reminder .btn-row{display:flex; gap:8px; flex:none;}
+
   .grid{display:grid; grid-template-columns: var(--log-w, 380px) 10px 1fr; column-gap:14px;}
   @media (max-width:780px){ .grid{grid-template-columns:1fr;} }
 
@@ -183,29 +279,6 @@
   .point{fill:var(--ember); stroke:var(--charcoal); stroke-width:2;}
   .point:hover{r:6;}
 
-  .chart-controls{display:flex; flex-direction:column; gap:6px; margin-bottom:6px;}
-  .slider-row{display:flex; align-items:center; gap:8px;}
-  .slider-row span{
-    font-size:10px; text-transform:uppercase; letter-spacing:0.6px; color:var(--chalk-dim);
-    font-family:'JetBrains Mono',monospace; width:46px; flex-shrink:0;
-  }
-  .slider-row input[type=range]{
-    width:100%; padding:0; background:transparent; -webkit-appearance:none; height:18px;
-  }
-  .slider-row input[type=range]::-webkit-slider-runnable-track{
-    height:3px; background:var(--hairline); border-radius:2px;
-  }
-  .slider-row input[type=range]::-webkit-slider-thumb{
-    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
-    background:var(--ember); margin-top:-6.5px; border:2px solid var(--charcoal);
-  }
-  .slider-row input[type=range]::-moz-range-track{
-    height:3px; background:var(--hairline); border-radius:2px;
-  }
-  .slider-row input[type=range]::-moz-range-thumb{
-    width:16px; height:16px; border-radius:50%; background:var(--ember); border:2px solid var(--charcoal);
-  }
-
   .history-table{width:100%; border-collapse:collapse; margin-top:16px; font-size:13px;}
   .history-table th{
     text-align:left; color:var(--chalk-dim); font-weight:500; font-size:11px;
@@ -233,6 +306,20 @@
 
   .chart-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
   @media (max-width:600px){ .chart-grid{grid-template-columns:1fr;} }
+
+  .chart-resize-box{position:relative; display:inline-block; max-width:100%; padding:0 14px 14px 0;}
+  .chart-h-resizer{
+    position:absolute; top:0; right:0; bottom:14px; width:14px; cursor:col-resize;
+    display:flex; align-items:center; justify-content:center; touch-action:none;
+  }
+  .chart-h-resizer::after{content:''; width:4px; height:40px; background:var(--hairline); border-radius:3px; transition:background .15s;}
+  .chart-h-resizer:hover::after, .chart-h-resizer.dragging::after{background:var(--ember);}
+  .chart-v-resizer{
+    position:absolute; left:0; right:14px; bottom:0; height:14px; cursor:row-resize;
+    display:flex; align-items:center; justify-content:center; touch-action:none;
+  }
+  .chart-v-resizer::after{content:''; height:4px; width:40px; background:var(--hairline); border-radius:3px; transition:background .15s;}
+  .chart-v-resizer:hover::after, .chart-v-resizer.dragging::after{background:var(--ember);}
   .chart-title{
     font-size:13px; text-transform:uppercase; letter-spacing:0.8px; color:var(--chalk-dim);
     margin-bottom:4px; font-family:'JetBrains Mono',monospace;
@@ -312,13 +399,36 @@
       <input type="file" id="importFile" accept="application/json">
       <input type="file" id="importCsvFile" accept=".csv,text/csv">
       <div class="header-sep"></div>
+      <button class="ghost-btn" id="unitToggleBtn">Units: KG</button>
       <div class="sync-badge" id="syncBadge"><span class="sync-dot" id="syncDot"></span><span id="syncText">—</span></div>
       <button class="ghost-btn" id="logoutBtn">Log out</button>
     </div>
   </header>
 
+  <div class="status-strip" id="statusStrip">
+    <span id="statusLocation">📍 Locating…</span>
+    <span class="status-sep">·</span>
+    <span id="statusDateTime">—</span>
+  </div>
+
+  <div class="main-tabs" id="mainTabs">
+    <button class="main-tab active" data-tab="log">LOG & PROGRESS</button>
+    <button class="main-tab" data-tab="howto">HOW TO USE</button>
+    <button class="main-tab" data-tab="transform">TRANSFORMATION LOG</button>
+  </div>
+
+  <div class="tab-panel active" id="tabPanel-log">
+
+  <div class="streak-card" id="streakCard">
+    <div class="streak-main">
+      <div class="streak-num" id="streakNum">0<span>DAY STREAK</span></div>
+      <div class="streak-msg" id="streakMsg">Log a set to start your streak.</div>
+    </div>
+    <button class="ghost-btn" id="streakSettingsBtn">⚙ Rest Days</button>
+  </div>
+
   <div class="notice" id="noticeBox">
-    <b>Your data saves automatically</b> — locally on this device, and synced to your account whenever you're online. Works fully offline; changes sync the moment you're back on the internet. Export still works any time if you want a backup file you can keep elsewhere — JSON keeps the full structure for re-importing into Iron Log, CSV is handy for spreadsheets (each row is one set).
+    <b>Your data saves automatically</b> — locally on this device, and synced to your account whenever you're online. Works fully offline; changes sync the moment you're back on the internet. Toggle <b>Units</b> in the header to switch the whole app between kg and lb — your logged numbers convert automatically. Export still works any time if you want a backup file you can keep elsewhere — JSON/CSV always export in kg regardless of the toggle, so backups stay consistent; CSV is handy for spreadsheets (each row is one set).
   </div>
 
   <div class="grid">
@@ -382,6 +492,62 @@
     </div>
 
   </div>
+
+  </div><!-- /tabPanel-log -->
+
+  <div class="tab-panel" id="tabPanel-howto">
+    <div class="card howto-card">
+      <h2>HOW TO USE IRON LOG</h2>
+
+      <h3>Logging a set</h3>
+      <p>Pick a <b>Split</b> (e.g. Push Day) and <b>Exercise</b>, fill in weight and reps for as many of the three set slots as you did, set the date, and hit <b>LOG SET</b>. Iron Log groups sets by exercise and date automatically.</p>
+
+      <h3>Tracking progress</h3>
+      <p>Click any exercise on the right to see its history, estimated 1-rep max trend, and volume over time. Use the split tabs above the exercise list to filter by training day.</p>
+
+      <h3>Streak</h3>
+      <p>The streak card counts consecutive days you either logged a workout or marked as a rest day. Click <b>⚙ Rest Days</b> to tell Iron Log which day(s) of the week you rest, so those days don't break your streak.</p>
+
+      <h3>Sync & offline</h3>
+      <p>Everything saves locally first, so the app works with no internet. When you're online and logged in, your data syncs automatically to your account and appears on any other device you log into.</p>
+
+      <h3>Backups</h3>
+      <p>Use <b>Export JSON</b> for a full backup you can re-import later, or <b>Export CSV</b> to open your sets in a spreadsheet. <b>Undo/Redo</b> covers your last several edits if you log something by mistake.</p>
+
+      <h3>Transformation log</h3>
+      <p>Switch to the <b>Transformation Log</b> tab to upload progress photos. Set an interval (in days) and Iron Log will pull out one photo closest to each interval mark so you can see change over time, alongside a full gallery of everything you've uploaded.</p>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tabPanel-transform">
+    <div class="card">
+      <div class="card-header-row">
+        <h2>TRANSFORMATION LOG</h2>
+        <div>
+          <input type="file" id="photoUpload" accept="image/*" style="display:none">
+          <button class="upload-btn" id="photoUploadBtn">+ Add Photo</button>
+        </div>
+      </div>
+
+      <div class="photo-reminder hidden" id="photoReminder">
+        <p id="photoReminderText"></p>
+        <div class="btn-row">
+          <button class="upload-btn" id="photoReminderUploadBtn">📸 Add it now</button>
+          <button class="ghost-btn" id="photoReminderDismiss">Remind me later</button>
+        </div>
+      </div>
+
+      <div class="transform-controls">
+        <div class="field">
+          <label for="photoDate">Photo date</label>
+          <input type="date" id="photoDate">
+        </div>
+      </div>
+
+      <h3 style="font-family:'Bebas Neue',sans-serif; letter-spacing:1px; font-size:18px; margin-bottom:10px; color:var(--chalk-dim);">ALL PHOTOS</h3>
+      <div class="photo-grid" id="photoGrid"></div>
+    </div>
+  </div>
 </div>
 
 <!-- confirm modal -->
@@ -394,6 +560,28 @@
       <button class="modal-confirm" id="modalOk">Delete</button>
     </div>
   </div>
+</div>
+
+<!-- rest day settings modal -->
+<div class="modal-backdrop hidden" id="restDayModal">
+  <div class="modal">
+    <h3>Rest Days</h3>
+    <p style="color:var(--chalk-dim); font-size:13px; margin-bottom:14px;">Pick the day(s) you plan to rest each week. These days won't break your streak even without a logged workout.</p>
+    <div id="restDayChecks" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px;"></div>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="restDayCancel">Cancel</button>
+      <button class="modal-confirm" id="restDaySave" style="background:var(--ember)">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- photo lightbox -->
+<div class="lightbox hidden" id="lightbox">
+  <button class="lightbox-close" id="lightboxClose">✕</button>
+  <button class="lightbox-nav prev" id="lightboxPrev">‹</button>
+  <img id="lightboxImg" src="" alt="">
+  <button class="lightbox-nav next" id="lightboxNext">›</button>
+  <div class="lightbox-caption" id="lightboxCaption"></div>
 </div>
 
 <script>
@@ -412,6 +600,7 @@ const firebaseConfig = {
   appId: "1:666689490930:web:2aa820d2180a7b4298a56b",
   measurementId: "G-CD7L1DW7BQ"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -421,7 +610,46 @@ db.enablePersistence({ synchronizeTabs: true }).catch(err => {
   console.warn('Offline persistence not enabled:', err.code);
 });
 
-let data = {}; // { exerciseName: [{date, split, sets:[{weight,reps},...]}, ...] }
+let data = {}; // { exerciseName: [{date, split, sets:[{weight,reps},...]}, ...] } — weights always stored in kg
+let weightUnit = 'kg'; // 'kg' or 'lb' — display/input preference only, never affects storage
+
+function getUnitKey(){ return currentUser ? `ironlog-unit-${currentUser.uid}` : 'ironlog-unit'; }
+function loadWeightUnit(){
+  try{
+    const saved = localStorage.getItem(getUnitKey());
+    weightUnit = saved === 'lb' ? 'lb' : 'kg';
+  }catch(e){ weightUnit = 'kg'; }
+  applyWeightUnitToUI();
+}
+function setWeightUnit(u){
+  weightUnit = u === 'lb' ? 'lb' : 'kg';
+  try{ localStorage.setItem(getUnitKey(), weightUnit); }catch(e){}
+  if(currentUser){
+    db.collection('users').doc(currentUser.uid).set({ weightUnit }, { merge: true }).catch(err => console.error(err));
+  }
+  applyWeightUnitToUI();
+}
+function kgToLb(kg){ return kg * 2.20462; }
+function lbToKg(lb){ return lb / 2.20462; }
+function dispW(kg){ // kg (canonical) -> display value, rounded
+  const v = weightUnit === 'lb' ? kgToLb(kg) : kg;
+  return Math.round(v * 10) / 10;
+}
+function toKg(displayVal){ // display value -> kg for storage
+  return weightUnit === 'lb' ? lbToKg(displayVal) : displayVal;
+}
+function applyWeightUnitToUI(){
+  const btn = document.getElementById('unitToggleBtn');
+  if(btn) btn.textContent = 'Units: ' + weightUnit.toUpperCase();
+  document.querySelectorAll('.set-weight').forEach(inp => {
+    inp.placeholder = `Weight (${weightUnit})`;
+  });
+  renderPlates();
+  if(Object.keys(data).length) renderExerciseList();
+}
+document.getElementById('unitToggleBtn').addEventListener('click', () => {
+  setWeightUnit(weightUnit === 'kg' ? 'lb' : 'kg');
+});
 let currentUser = null;
 let firestoreUnsub = null;
 let suppressNextSnapshotSave = false; // avoid re-writing data we just received from a snapshot
@@ -595,6 +823,35 @@ dateInput.valueAsDate = new Date();
   resizer.addEventListener('pointercancel', stopDrag);
 })();
 
+// Drag-to-resize chart boxes (replaces width/height sliders)
+function bindChartResize(handle, axis, min, max){
+  let dragging = false, startPos = 0, startSize = 0;
+  handle.addEventListener('pointerdown', (e) => {
+    const svg = document.getElementById(handle.dataset.target);
+    if(!svg) return;
+    dragging = true;
+    handle.classList.add('dragging');
+    handle.setPointerCapture(e.pointerId);
+    startPos = axis === 'width' ? e.clientX : e.clientY;
+    const rect = svg.getBoundingClientRect();
+    startSize = axis === 'width' ? rect.width : rect.height;
+  });
+  handle.addEventListener('pointermove', (e) => {
+    if(!dragging) return;
+    const svg = document.getElementById(handle.dataset.target);
+    if(!svg) return;
+    const pos = axis === 'width' ? e.clientX : e.clientY;
+    const newSize = Math.max(min, Math.min(max, startSize + (pos - startPos)));
+    svg.style[axis] = newSize + 'px';
+  });
+  function stopDrag(){
+    dragging = false;
+    handle.classList.remove('dragging');
+  }
+  handle.addEventListener('pointerup', stopDrag);
+  handle.addEventListener('pointercancel', stopDrag);
+}
+
 // Plate viz follows the heaviest of the three set-weight inputs
 function topEnteredWeight(){
   let max = 0;
@@ -607,8 +864,9 @@ function topEnteredWeight(){
 
 function renderPlates(){
   const w = topEnteredWeight();
-  const perSide = Math.max(0, (w - 20) / 2); // assume 20kg bar
-  const plateSizes = [25,20,15,10,5,2.5,1.25];
+  const barWeight = weightUnit === 'lb' ? 45 : 20;
+  const plateSizes = weightUnit === 'lb' ? [45,35,25,10,5,2.5] : [25,20,15,10,5,2.5,1.25];
+  const perSide = Math.max(0, (w - barWeight) / 2);
   let remaining = perSide;
   let plates = [];
   for(const size of plateSizes){
@@ -617,12 +875,12 @@ function renderPlates(){
       remaining -= size;
     }
   }
-  const heightFor = s => 24 + Math.min(s,25) * 1.5;
-  const widthFor = s => s >= 15 ? 16 : s >= 5 ? 12 : 8;
+  const heightFor = s => 24 + Math.min(s,45) * (weightUnit === 'lb' ? 0.8 : 1.5);
+  const widthFor = s => s >= (weightUnit === 'lb' ? 25 : 15) ? 16 : s >= 5 ? 12 : 8;
   plateViz.innerHTML = '<div class="bar-end"></div>' +
-    plates.map(s => `<div class="plate" style="height:${heightFor(s)}px;width:${widthFor(s)}px" title="${s}kg"></div>`).reverse().join('') +
+    plates.map(s => `<div class="plate" style="height:${heightFor(s)}px;width:${widthFor(s)}px" title="${s}${weightUnit}"></div>`).reverse().join('') +
     (plates.length ? '<div style="width:24px;height:6px;background:var(--steel-2);border-radius:2px;margin:0 4px;"></div>' : '') +
-    plates.map(s => `<div class="plate" style="height:${heightFor(s)}px;width:${widthFor(s)}px" title="${s}kg"></div>`).join('') +
+    plates.map(s => `<div class="plate" style="height:${heightFor(s)}px;width:${widthFor(s)}px" title="${s}${weightUnit}"></div>`).join('') +
     '<div class="bar-end"></div>';
 }
 setWeightInputs.forEach(inp => inp.addEventListener('input', renderPlates));
@@ -719,6 +977,7 @@ function refreshSuggestions(){
 }
 
 function renderExerciseList(){
+  renderStreak();
   renderSplitTabs();
   const allNames = Object.keys(data);
   const names = allNames.filter(name =>
@@ -755,9 +1014,9 @@ function renderExerciseList(){
       ${cbHtml}
       <div style="flex:1;min-width:0;">
         <div class="ex-name">${name}${last.split && !activeSplit ? ` <span class="ex-meta">· ${last.split}</span>` : ''}</div>
-        <div class="ex-meta">${entries.length} session${entries.length>1?'s':''} · last top set ${lastTop.weight}kg × ${lastTop.reps}</div>
+        <div class="ex-meta">${entries.length} session${entries.length>1?'s':''} · last top set ${dispW(lastTop.weight)}${weightUnit} × ${lastTop.reps}</div>
       </div>
-      <div class="ex-trend ${trendClass}">${trendSign} ${Math.abs(diff).toFixed(1)}kg</div>
+      <div class="ex-trend ${trendClass}">${trendSign} ${Math.abs(dispW(diff)).toFixed(1)}${weightUnit}</div>
     </div>`;
   }).join('');
 
@@ -851,15 +1110,15 @@ function renderDetail(){
 
   const topSetChart = buildLineChart(
     entries,
-    e => topSet(e).weight,
-    e => `${topSet(e).weight}kg × ${topSet(e).reps} (top set)`,
+    e => dispW(topSet(e).weight),
+    e => `${dispW(topSet(e).weight)}${weightUnit} × ${topSet(e).reps} (top set)`,
     'chart-topset'
   );
 
   const volumeChart = buildLineChart(
     entries,
-    e => avgVolume(e),
-    e => `${avgVolume(e).toFixed(1)}kg avg volume`,
+    e => dispW(avgVolume(e)),
+    e => `${dispW(avgVolume(e)).toFixed(1)}${weightUnit} avg volume`,
     'chart-volume'
   );
 
@@ -867,13 +1126,13 @@ function renderDetail(){
     const dataIdx = data[selectedEx].indexOf(e);
     const t = topSet(e);
     const isBest = t.weight === maxWeight;
-    const setsDesc = e.sets.map(s => `${s.weight}×${s.reps}`).join(' / ');
+    const setsDesc = e.sets.map(s => `${dispW(s.weight)}×${s.reps}`).join(' / ');
     return `<tr data-idx="${dataIdx}">
       <td class="check-col"><input type="checkbox" class="row-cb entry-cb" data-idx="${dataIdx}"></td>
       <td>${fmtDate(e.date)}</td>
       <td>${e.split || '–'}</td>
       <td>${setsDesc} ${isBest ? '<span class="best-badge">PR</span>' : ''}</td>
-      <td>${avgVolume(e).toFixed(1)}kg</td>
+      <td>${dispW(avgVolume(e)).toFixed(1)}${weightUnit}</td>
       <td><button class="del-btn" data-idx="${dataIdx}" title="Delete entry">✕</button></td>
     </tr>`;
   }).join('');
@@ -883,19 +1142,19 @@ function renderDetail(){
     <div class="chart-grid">
       <div>
         <div class="chart-title">Top set weight</div>
-        <div class="chart-controls">
-          <div class="slider-row"><span>Width</span><input type="range" min="300" max="900" value="600" data-target="chart-topset" data-axis="width"></div>
-          <div class="slider-row"><span>Height</span><input type="range" min="150" max="500" value="280" data-target="chart-topset" data-axis="height"></div>
+        <div class="chart-resize-box">
+          <div class="chart-wrap">${topSetChart}</div>
+          <div class="chart-h-resizer" data-target="chart-topset" title="Drag to resize width"></div>
+          <div class="chart-v-resizer" data-target="chart-topset" title="Drag to resize height"></div>
         </div>
-        <div class="chart-wrap">${topSetChart}</div>
       </div>
       <div>
         <div class="chart-title">Average volume</div>
-        <div class="chart-controls">
-          <div class="slider-row"><span>Width</span><input type="range" min="300" max="900" value="600" data-target="chart-volume" data-axis="width"></div>
-          <div class="slider-row"><span>Height</span><input type="range" min="150" max="500" value="280" data-target="chart-volume" data-axis="height"></div>
+        <div class="chart-resize-box">
+          <div class="chart-wrap">${volumeChart}</div>
+          <div class="chart-h-resizer" data-target="chart-volume" title="Drag to resize width"></div>
+          <div class="chart-v-resizer" data-target="chart-volume" title="Drag to resize height"></div>
         </div>
-        <div class="chart-wrap">${volumeChart}</div>
       </div>
     </div>
     <table class="history-table">
@@ -911,14 +1170,9 @@ function renderDetail(){
     </div>
   `;
 
-  // chart resize sliders
-  detailPanel.querySelectorAll('.slider-row input[type=range]').forEach(slider => {
-    slider.addEventListener('input', () => {
-      const svg = document.getElementById(slider.dataset.target);
-      if(!svg) return;
-      svg.style[slider.dataset.axis] = slider.value + 'px';
-    });
-  });
+  // chart resize handles (drag edges instead of sliders)
+  detailPanel.querySelectorAll('.chart-h-resizer').forEach(handle => bindChartResize(handle, 'width', 300, 900));
+  detailPanel.querySelectorAll('.chart-v-resizer').forEach(handle => bindChartResize(handle, 'height', 150, 500));
 
   // single-row delete ✕
   detailPanel.querySelectorAll('.del-btn').forEach(btn => {
@@ -986,10 +1240,10 @@ document.getElementById('logBtn').addEventListener('click', () => {
 
   const sets = [];
   setWeightInputs.forEach((inp, i) => {
-    const weight = parseFloat(inp.value);
+    const enteredWeight = parseFloat(inp.value);
     const reps = parseInt(setRepsInputs[i].value);
-    if(!isNaN(weight) && !isNaN(reps)){
-      sets.push({weight, reps});
+    if(!isNaN(enteredWeight) && !isNaN(reps)){
+      sets.push({weight: toKg(enteredWeight), reps});
     }
   });
 
@@ -1193,6 +1447,14 @@ function startFirestoreSync(uid){
         refreshSuggestions();
         renderExerciseList();
       }
+      if(remote && Array.isArray(remote.restDays)){
+        localStorage.setItem(getRestDaysKey(), JSON.stringify(remote.restDays));
+        renderStreak();
+      }
+      if(remote && (remote.weightUnit === 'kg' || remote.weightUnit === 'lb')){
+        localStorage.setItem(getUnitKey(), remote.weightUnit);
+        loadWeightUnit();
+      }
     }
   }, err => {
     console.error('Sync listener error:', err);
@@ -1254,24 +1516,360 @@ function friendlyAuthError(err){
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   if(firestoreUnsub){ firestoreUnsub(); firestoreUnsub = null; }
+  if(photosUnsub){ photosUnsub(); photosUnsub = null; }
   auth.signOut();
 });
 
 window.addEventListener('online', () => setSyncStatus(currentUser ? 'online' : '—'));
 window.addEventListener('offline', () => setSyncStatus(currentUser ? 'offline' : '—'));
 
+/* ---------------- Tabs ---------------- */
+document.querySelectorAll('.main-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tabPanel-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------------- Streak feature ---------------- */
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function toISO(d){
+  const off = d.getTimezoneOffset();
+  const local = new Date(d.getTime() - off*60000);
+  return local.toISOString().slice(0,10);
+}
+function getRestDaysKey(){ return currentUser ? `ironlog-restdays-${currentUser.uid}` : 'ironlog-restdays'; }
+function getRestDays(){
+  try{
+    const raw = localStorage.getItem(getRestDaysKey());
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return []; }
+}
+function setRestDays(arr){
+  localStorage.setItem(getRestDaysKey(), JSON.stringify(arr));
+  if(currentUser){
+    db.collection('users').doc(currentUser.uid).set({ restDays: arr }, { merge: true }).catch(err => console.error(err));
+  }
+}
+function getWorkoutDateSet(){
+  const set = new Set();
+  Object.values(data).forEach(entries => entries.forEach(e => { if(e.date) set.add(e.date); }));
+  return set;
+}
+function computeStreak(){
+  const restDays = getRestDays();
+  const workoutDates = getWorkoutDateSet();
+  let cursor = new Date(); cursor.setHours(0,0,0,0);
+  const todayStr = toISO(cursor);
+  const todayQualifies = workoutDates.has(todayStr) || restDays.includes(cursor.getDay());
+  if(!todayQualifies){ cursor.setDate(cursor.getDate()-1); }
+  let streak = 0;
+  while(true){
+    const ds = toISO(cursor);
+    if(workoutDates.has(ds) || restDays.includes(cursor.getDay())){
+      streak++;
+      cursor.setDate(cursor.getDate()-1);
+    }else break;
+  }
+  return { streak, todayLogged: workoutDates.has(todayStr) };
+}
+function streakMessage(streak, todayLogged){
+  let msg;
+  if(streak === 0) msg = "Log a set to start your streak 🌱";
+  else if(streak < 3) msg = "Building momentum — keep it up 💪";
+  else if(streak < 7) msg = "You're on a roll 🔥";
+  else if(streak < 14) msg = "One week strong. Don't stop now 🔥🔥";
+  else if(streak < 30) msg = "Two+ weeks of consistency — impressive 🚀";
+  else if(streak < 60) msg = "A month of grinding. Respect. 🏆";
+  else msg = "Absolute machine. Nothing stops you. 🦾🔥";
+  if(streak > 0 && !todayLogged) msg += " Log today to keep it alive.";
+  return msg;
+}
+function renderStreak(){
+  const { streak, todayLogged } = computeStreak();
+  document.getElementById('streakNum').innerHTML = streak + '<span>DAY STREAK</span>';
+  document.getElementById('streakMsg').textContent = streakMessage(streak, todayLogged);
+}
+
+const restDayModal = document.getElementById('restDayModal');
+const restDayChecks = document.getElementById('restDayChecks');
+restDayChecks.innerHTML = DAY_NAMES.map((name, i) => `
+  <label style="display:flex;align-items:center;gap:6px;background:var(--steel-2);border:1px solid var(--hairline);border-radius:6px;padding:8px 12px;cursor:pointer;font-size:13px;">
+    <input type="checkbox" class="restday-cb" value="${i}" style="width:auto;"> ${name}
+  </label>
+`).join('');
+document.getElementById('streakSettingsBtn').addEventListener('click', () => {
+  const current = getRestDays();
+  restDayChecks.querySelectorAll('.restday-cb').forEach(cb => { cb.checked = current.includes(parseInt(cb.value)); });
+  restDayModal.classList.remove('hidden');
+});
+document.getElementById('restDayCancel').addEventListener('click', () => restDayModal.classList.add('hidden'));
+restDayModal.addEventListener('click', e => { if(e.target === restDayModal) restDayModal.classList.add('hidden'); });
+document.getElementById('restDaySave').addEventListener('click', () => {
+  const selected = [...restDayChecks.querySelectorAll('.restday-cb:checked')].map(cb => parseInt(cb.value));
+  setRestDays(selected);
+  renderStreak();
+  restDayModal.classList.add('hidden');
+});
+
+/* ---------------- Transformation log ---------------- */
+let photos = [];
+let photosUnsub = null;
+document.getElementById('photoDate').value = toISO(new Date());
+
+function compressImage(file, maxWidth = 900, quality = 0.72){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if(w > maxWidth){ h = Math.round(h * (maxWidth / w)); w = maxWidth; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function getPhotosKey(uid){ return `ironlog-photos-${uid}`; }
+function loadPhotosLocalCache(uid){
+  try{
+    const raw = localStorage.getItem(getPhotosKey(uid));
+    photos = raw ? JSON.parse(raw) : [];
+  }catch(e){ photos = []; }
+  renderPhotos();
+}
+function savePhotosLocalCache(uid){
+  try{ localStorage.setItem(getPhotosKey(uid), JSON.stringify(photos)); }catch(e){ console.error('Could not cache photos locally (may be too large for localStorage):', e); }
+}
+function startPhotosSync(uid){
+  if(photosUnsub) photosUnsub();
+  photosUnsub = db.collection('users').doc(uid).collection('photos').orderBy('date')
+    .onSnapshot(snap => {
+      photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      savePhotosLocalCache(uid);
+      renderPhotos();
+    }, err => console.error('Photo sync error:', err));
+}
+
+document.getElementById('photoUploadBtn').addEventListener('click', () => document.getElementById('photoUpload').click());
+document.getElementById('photoUpload').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if(!file) return;
+  if(!currentUser){ alert('Please log in first.'); return; }
+  const dateVal = document.getElementById('photoDate').value || toISO(new Date());
+  try{
+    const imageData = await compressImage(file);
+    const docRef = db.collection('users').doc(currentUser.uid).collection('photos').doc();
+    const entry = { date: dateVal, imageData, createdAt: Date.now() };
+    photos.push({ id: docRef.id, ...entry });
+    photos.sort((a,b) => a.date.localeCompare(b.date));
+    savePhotosLocalCache(currentUser.uid);
+    renderPhotos();
+    docRef.set(entry).catch(err => console.error('Photo save failed:', err));
+  }catch(err){
+    alert('Could not process that image — try a different file.');
+  }
+});
+
+function deletePhoto(id){
+  photos = photos.filter(p => p.id !== id);
+  savePhotosLocalCache(currentUser.uid);
+  renderPhotos();
+  if(currentUser){
+    db.collection('users').doc(currentUser.uid).collection('photos').doc(id).delete().catch(err => console.error(err));
+  }
+}
+
+function renderPhotos(){
+  checkMonthlyPhotoReminder();
+  const grid = document.getElementById('photoGrid');
+  if(!photos.length){
+    grid.innerHTML = '<div class="empty">No photos yet — add your first one above.</div>';
+  }else{
+    const sortedDesc = [...photos].sort((a,b) => b.date.localeCompare(a.date));
+    grid.innerHTML = sortedDesc.map(p => `
+      <div class="photo-tile" data-id="${p.id}">
+        <img src="${p.imageData}" alt="${p.date}" loading="lazy">
+        <button class="photo-del" data-id="${p.id}" title="Delete">✕</button>
+        <div class="photo-date">${fmtDate(p.date)}</div>
+      </div>
+    `).join('');
+    grid.querySelectorAll('.photo-del').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showConfirm('Delete photo', 'Remove this progress photo? This cannot be undone.', 'Delete', () => deletePhoto(btn.dataset.id));
+      });
+    });
+    grid.querySelectorAll('.photo-tile').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const idx = sortedDesc.findIndex(p => p.id === tile.dataset.id);
+        openLightbox(sortedDesc, idx);
+      });
+    });
+  }
+}
+
+/* ---------------- Photo lightbox ---------------- */
+let lightboxList = [];
+let lightboxIndex = 0;
+const lightboxEl = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightboxImg');
+const lightboxCaption = document.getElementById('lightboxCaption');
+
+function openLightbox(list, index){
+  lightboxList = list;
+  lightboxIndex = index;
+  showLightboxPhoto();
+  lightboxEl.classList.remove('hidden');
+}
+function showLightboxPhoto(){
+  const p = lightboxList[lightboxIndex];
+  if(!p) return;
+  lightboxImg.src = p.imageData;
+  lightboxCaption.textContent = `${fmtDate(p.date)} — photo ${lightboxIndex + 1} of ${lightboxList.length}`;
+}
+function closeLightbox(){ lightboxEl.classList.add('hidden'); }
+function lightboxStep(dir){
+  if(!lightboxList.length) return;
+  lightboxIndex = (lightboxIndex + dir + lightboxList.length) % lightboxList.length;
+  showLightboxPhoto();
+}
+document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+document.getElementById('lightboxPrev').addEventListener('click', () => lightboxStep(-1));
+document.getElementById('lightboxNext').addEventListener('click', () => lightboxStep(1));
+lightboxEl.addEventListener('click', e => { if(e.target === lightboxEl) closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if(lightboxEl.classList.contains('hidden')) return;
+  if(e.key === 'ArrowLeft') lightboxStep(-1);
+  else if(e.key === 'ArrowRight') lightboxStep(1);
+  else if(e.key === 'Escape') closeLightbox();
+});
+
+/* ---------------- Monthly photo reminder ---------------- */
+const REMINDER_LINES = [
+  "It's a new month — your transformation log is missing this month's snapshot. Future you will want the receipts. 📸",
+  "Progress photo o'clock! One shot now saves you guessing where you started next month. 💪",
+  "Your gains don't lie, but your memory does. Snap this month's photo before you forget. 🧠📷",
+  "The camera is judging your consistency, not your body. Take this month's photo. 🎯",
+  "New month, new data point. Add your progress photo to keep the evidence trail going. 🔥",
+  "Somewhere, a spreadsheet is crying because this month's photo is missing. Fix that. 📊😢"
+];
+function currentMonthKey(d = new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+
+function checkMonthlyPhotoReminder(){
+  const banner = document.getElementById('photoReminder');
+  if(!currentUser){ banner.classList.add('hidden'); return; }
+  const thisMonth = currentMonthKey();
+  const hasPhotoThisMonth = photos.some(p => p.date && p.date.slice(0,7) === thisMonth);
+  if(hasPhotoThisMonth){ banner.classList.add('hidden'); return; }
+  const dismissKey = `ironlog-photoreminder-dismissed-${currentUser.uid}`;
+  if(localStorage.getItem(dismissKey) === thisMonth){ banner.classList.add('hidden'); return; }
+  document.getElementById('photoReminderText').textContent = REMINDER_LINES[Math.floor(Math.random() * REMINDER_LINES.length)];
+  banner.classList.remove('hidden');
+}
+document.getElementById('photoReminderUploadBtn').addEventListener('click', () => {
+  document.querySelector('.main-tab[data-tab="transform"]').click();
+  document.getElementById('photoDate').value = toISO(new Date());
+  document.getElementById('photoUpload').click();
+});
+document.getElementById('photoReminderDismiss').addEventListener('click', () => {
+  if(currentUser){
+    localStorage.setItem(`ironlog-photoreminder-dismissed-${currentUser.uid}`, currentMonthKey());
+  }
+  document.getElementById('photoReminder').classList.add('hidden');
+});
+
+/* ---------------- Live server time + location ---------------- */
+let serverTimeOffsetMs = 0;
+
+async function syncServerTime(){
+  try{
+    const res = await fetch('https://worldtimeapi.org/api/ip');
+    const json = await res.json();
+    serverTimeOffsetMs = new Date(json.datetime).getTime() - Date.now();
+  }catch(err){
+    serverTimeOffsetMs = 0; // offline or blocked — fall back to device clock
+  }
+}
+function tickClock(){
+  const now = new Date(Date.now() + serverTimeOffsetMs);
+  const dateStr = now.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+  const timeStr = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const el = document.getElementById('statusDateTime');
+  if(el) el.textContent = `🕐 ${dateStr}, ${timeStr}`;
+}
+setInterval(tickClock, 1000);
+tickClock();
+syncServerTime();
+setInterval(syncServerTime, 10 * 60 * 1000); // re-sync with server every 10 min to correct drift
+
+let lastCoords = null;
+let lastGeocodedAt = 0;
+async function reverseGeocode(lat, lon){
+  try{
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
+    const json = await res.json();
+    const addr = json.address || {};
+    const place = addr.city || addr.town || addr.village || addr.county || addr.state || 'Unknown area';
+    const el = document.getElementById('statusLocation');
+    if(el) el.textContent = `📍 ${place}${addr.country ? ', ' + addr.country : ''}`;
+  }catch(err){
+    const el = document.getElementById('statusLocation');
+    if(el) el.textContent = '📍 Location lookup failed';
+  }
+}
+function handlePosition(pos){
+  const { latitude, longitude } = pos.coords;
+  const now = Date.now();
+  const moved = !lastCoords || Math.abs(lastCoords.lat - latitude) > 0.01 || Math.abs(lastCoords.lon - longitude) > 0.01;
+  if(moved || now - lastGeocodedAt > 5 * 60 * 1000){
+    lastCoords = { lat: latitude, lon: longitude };
+    lastGeocodedAt = now;
+    reverseGeocode(latitude, longitude);
+  }
+}
+function handlePositionError(){
+  const el = document.getElementById('statusLocation');
+  if(el) el.textContent = '📍 Location permission denied';
+}
+if(navigator.geolocation){
+  navigator.geolocation.getCurrentPosition(handlePosition, handlePositionError, { enableHighAccuracy:false, maximumAge:60000 });
+  navigator.geolocation.watchPosition(handlePosition, handlePositionError, { enableHighAccuracy:false, maximumAge:60000 });
+}else{
+  const el = document.getElementById('statusLocation');
+  if(el) el.textContent = '📍 Geolocation not supported';
+}
+
 auth.onAuthStateChanged(user => {
   currentUser = user;
   if(user){
     authScreen.classList.add('hidden');
+    loadWeightUnit();
     loadLocalCache(user.uid);   // instant paint from cache (works offline)
     startFirestoreSync(user.uid); // live sync + cross-device updates
+    loadPhotosLocalCache(user.uid);
+    startPhotosSync(user.uid);
+    renderStreak();
     setSyncStatus(navigator.onLine ? 'online' : 'offline');
   }else{
     authScreen.classList.remove('hidden');
     data = {};
+    photos = [];
     refreshSuggestions();
     renderExerciseList();
+    renderPhotos();
     setSyncStatus('—');
   }
 });

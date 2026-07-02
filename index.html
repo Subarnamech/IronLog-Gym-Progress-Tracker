@@ -1765,13 +1765,17 @@ function savePhotosLocalCache(uid){
 function pushUnsyncedPhotos(uid){
   if(!currentUser || currentUser.uid !== uid) return;
   photos.filter(p => p._synced === false).forEach(p => {
-    const { id, _synced, ...entry } = p;
+    const { id, _synced, _syncError, ...entry } = p;
     db.collection('users').doc(uid).collection('photos').doc(p.id).set(entry)
       .then(() => {
         const match = photos.find(x => x.id === p.id);
-        if(match){ match._synced = true; savePhotosLocalCache(uid); renderPhotos(); }
+        if(match){ match._synced = true; delete match._syncError; savePhotosLocalCache(uid); renderPhotos(); }
       })
-      .catch(err => console.error('Retry photo sync failed:', err));
+      .catch(err => {
+        console.error('Retry photo sync failed:', err);
+        const match = photos.find(x => x.id === p.id);
+        if(match){ match._syncError = err && err.code ? err.code : 'unknown'; savePhotosLocalCache(uid); renderPhotos(); }
+      });
   });
 }
 
@@ -1821,7 +1825,12 @@ document.getElementById('photoUpload').addEventListener('change', async (e) => {
     if(match){ match._synced = true; savePhotosLocalCache(uidAtUpload); renderPhotos(); }
   }).catch(err => {
     console.error('Photo save failed:', err);
-    alert('This photo saved on this device but could not sync to your account yet (offline, or the connection dropped). It will keep retrying, and stays visible here in the meantime — check the "Not synced" tag on it.');
+    const match = photos.find(p => p.id === docRef.id);
+    if(match){ match._syncError = err && err.code ? err.code : 'unknown'; savePhotosLocalCache(uidAtUpload); renderPhotos(); }
+    const reason = err && err.code === 'permission-denied'
+      ? 'Your account does not have permission to save photos (a Firestore security rules issue) — this needs to be fixed in the Firebase project config, not on this device.'
+      : `Reason: ${err && err.code ? err.code : (err && err.message) || 'unknown error'}.`;
+    alert(`This photo saved on this device but could not sync to your account. ${reason} It stays visible here and will keep retrying — check the "Not synced" tag on it.`);
   });
 });
 
@@ -1844,7 +1853,7 @@ function renderPhotos(){
     grid.innerHTML = sortedDesc.map(p => `
       <div class="photo-tile" data-id="${p.id}">
         <img src="${p.imageData}" alt="${p.date}" loading="lazy">
-        ${p._synced === false ? '<div class="photo-unsynced" title="Only saved on this device so far — will sync when back online">Not synced</div>' : ''}
+        ${p._synced === false ? `<div class="photo-unsynced" title="${p._syncError ? 'Sync failed: ' + p._syncError : 'Only saved on this device so far — will sync when back online'}">Not synced</div>` : ''}
         <button class="photo-del" data-id="${p.id}" title="Delete">✕</button>
         <div class="photo-date">${fmtDate(p.date)}</div>
       </div>

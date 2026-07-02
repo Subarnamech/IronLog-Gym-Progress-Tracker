@@ -62,6 +62,7 @@
     margin-bottom:28px; line-height:1.5;
   }
   .notice b{color:var(--chalk);}
+  .notice.hidden{display:none;}
 
   /* ---- Auth / sync UI ---- */
   #authScreen{
@@ -411,6 +412,10 @@
     <span id="statusDateTime">—</span>
   </div>
 
+  <div class="notice hidden" id="fileProtocolWarning">
+    <b>Heads up:</b> you're opening this file directly from disk (file://). Some browsers won't reliably keep you logged in or persist offline data across reloads in this mode. For dependable saving, serve this file over http/https instead — e.g. run a local server, or host it on something like GitHub Pages or Netlify.
+  </div>
+
   <div class="main-tabs" id="mainTabs">
     <button class="main-tab active" data-tab="log">LOG & PROGRESS</button>
     <button class="main-tab" data-tab="howto">HOW TO USE</button>
@@ -425,10 +430,6 @@
       <div class="streak-msg" id="streakMsg">Log a set to start your streak.</div>
     </div>
     <button class="ghost-btn" id="streakSettingsBtn">⚙ Rest Days</button>
-  </div>
-
-  <div class="notice" id="noticeBox">
-    <b>Your data saves automatically</b> — locally on this device, and synced to your account whenever you're online. Works fully offline; changes sync the moment you're back on the internet. Toggle <b>Units</b> in the header to switch the whole app between kg and lb — your logged numbers convert automatically. Export still works any time if you want a backup file you can keep elsewhere — JSON/CSV always export in kg regardless of the toggle, so backups stay consistent; CSV is handy for spreadsheets (each row is one set).
   </div>
 
   <div class="grid">
@@ -499,20 +500,29 @@
     <div class="card howto-card">
       <h2>HOW TO USE IRON LOG</h2>
 
+      <h3>Account & sync</h3>
+      <p>You need to be logged in to use Iron Log — <b>Log In</b> or <b>Sign Up</b> on the first screen. Everything saves locally on your device first, so it works with no internet, then syncs to your account whenever you're online. Watch the sync badge in the header (next to <b>Log out</b>) — it shows <b>Synced</b>, <b>Syncing…</b>, or <b>Offline — saved locally</b>. Log into the same account on another device to see the same data there.</p>
+
       <h3>Logging a set</h3>
       <p>Pick a <b>Split</b> (e.g. Push Day) and <b>Exercise</b>, fill in weight and reps for as many of the three set slots as you did, set the date, and hit <b>LOG SET</b>. Iron Log groups sets by exercise and date automatically.</p>
 
       <h3>Tracking progress</h3>
-      <p>Click any exercise on the right to see its history, estimated 1-rep max trend, and volume over time. Use the split tabs above the exercise list to filter by training day.</p>
+      <p>Click any exercise on the right to see its history, estimated 1-rep max trend, and average volume over time. Use the split tabs above the exercise list to filter by training day. Drag the small handles on the edges of each chart to resize its width or height.</p>
+
+      <h3>Selecting & deleting</h3>
+      <p>Click <b>Select</b> above the exercise list to check off exercises and delete several at once. Inside an exercise's history table, use the row checkboxes the same way to bulk-delete individual sessions.</p>
 
       <h3>Streak</h3>
       <p>The streak card counts consecutive days you either logged a workout or marked as a rest day. Click <b>⚙ Rest Days</b> to tell Iron Log which day(s) of the week you rest, so those days don't break your streak.</p>
 
-      <h3>Sync & offline</h3>
-      <p>Everything saves locally first, so the app works with no internet. When you're online and logged in, your data syncs automatically to your account and appears on any other device you log into.</p>
+      <h3>Units</h3>
+      <p>Toggle <b>Units</b> in the header to switch the whole app between kg and lb — your logged numbers convert automatically. Numbers are always stored internally in kg, so switching units never changes your actual data.</p>
 
-      <h3>Backups</h3>
-      <p>Use <b>Export JSON</b> for a full backup you can re-import later, or <b>Export CSV</b> to open your sets in a spreadsheet. <b>Undo/Redo</b> covers your last several edits if you log something by mistake.</p>
+      <h3>Undo / Redo</h3>
+      <p><b>Undo</b> and <b>Redo</b> in the header (or Ctrl/Cmd+Z and Ctrl/Cmd+Y) step back and forward through your last several edits — handy if you log or delete something by mistake.</p>
+
+      <h3>Backups & transfers</h3>
+      <p>Use <b>Export JSON</b> for a full backup you can re-import later with <b>Import JSON</b>, or <b>Export CSV</b> to open your sets in a spreadsheet — you can also bring a CSV back in with <b>Import CSV</b> as long as it has exercise, date, split, set, weight, and reps columns. JSON/CSV exports always use kg regardless of your unit toggle, so backups stay consistent. <b>Reset All</b> wipes your logged data — use with care.</p>
 
       <h3>Transformation log</h3>
       <p>Switch to the <b>Transformation Log</b> tab to upload progress photos. Set an interval (in days) and Iron Log will pull out one photo closest to each interval mark so you can see change over time, alongside a full gallery of everything you've uploaded.</p>
@@ -605,10 +615,31 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// Explicitly request persistent login (survives reloads/browser restarts).
+// Without this, some browsers/contexts fall back to an in-memory session
+// that disappears the moment the page reloads — which looks like "my data
+// isn't saved" when really it's "I got logged out silently".
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(err => {
+  console.warn('Could not set LOCAL auth persistence, falling back to SESSION:', err.code);
+  auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(e => {
+    console.warn('Could not set SESSION auth persistence either:', e.code);
+  });
+});
+
 // Let the app work offline and resync automatically when back online.
 db.enablePersistence({ synchronizeTabs: true }).catch(err => {
   console.warn('Offline persistence not enabled:', err.code);
 });
+
+// Login/offline persistence (IndexedDB) is unreliable when a file is opened
+// straight from disk (file://) instead of served over http/https — this is
+// the most common reason logged data appears to "vanish" on reload. Warn
+// the user in-app instead of failing silently.
+if(location.protocol === 'file:'){
+  console.warn('Iron Log is running from a file:// URL. Login sessions and offline data may not persist reliably across reloads in this mode — serve this file over http/https (e.g. a local server, Netlify, GitHub Pages) for dependable saving.');
+  const warnEl = document.getElementById('fileProtocolWarning');
+  if(warnEl) warnEl.classList.remove('hidden');
+}
 
 let data = {}; // { exerciseName: [{date, split, sets:[{weight,reps},...]}, ...] } — weights always stored in kg
 let weightUnit = 'kg'; // 'kg' or 'lb' — display/input preference only, never affects storage

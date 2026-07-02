@@ -167,6 +167,11 @@
     display:flex; align-items:center; justify-content:center;
   }
   .photo-tile .photo-del:hover{color:#ff9a9a; border-color:#6b2f2f;}
+  .photo-tile .photo-unsynced{
+    position:absolute; top:6px; left:6px; background:rgba(224,82,82,.85); border:1px solid #6b2f2f;
+    color:#fff; font-size:10px; font-weight:700; letter-spacing:.3px; padding:3px 6px; border-radius:5px;
+    font-family:'JetBrains Mono',monospace;
+  }
   .interval-strip{display:flex; gap:14px; overflow-x:auto; padding-bottom:8px;}
   .interval-strip .photo-tile{min-width:150px; flex:none;}
   .photo-tile{cursor:zoom-in;}
@@ -957,6 +962,12 @@ function renderSplitTabs(){
   });
 }
 
+// Tracks whether the local copy of `data` has changes that haven't been
+// confirmed written to Firestore yet. Used to stop an incoming (stale)
+// snapshot from clobbering a newer local edit — see startFirestoreSync().
+let saveVersion = 0;
+function getPendingSyncKey(uid){ return `ironlog-pending-${uid}`; }
+
 function saveData(){
   // Local cache key is per-user so different accounts on the same device never mix data.
   const localKey = currentUser ? `ironlog-data-${currentUser.uid}` : 'ironlog-data';
@@ -965,27 +976,54 @@ function saveData(){
   }catch(err){
     console.error('Could not save data locally:', err);
   }
-  syncToFirestore();
+  saveVersion++;
+  if(currentUser){
+    try{ localStorage.setItem(getPendingSyncKey(currentUser.uid), String(saveVersion)); }catch(err){}
+  }
+  syncToFirestore(saveVersion);
 }
 
 let syncDebounceTimer = null;
-function syncToFirestore(){
+function syncToFirestore(version){
   if(!currentUser) return;
   if(suppressNextSnapshotSave){ suppressNextSnapshotSave = false; return; }
   setSyncStatus('syncing');
   clearTimeout(syncDebounceTimer);
+  const uid = currentUser.uid;
+  const payload = JSON.stringify(data);
   syncDebounceTimer = setTimeout(() => {
-    db.collection('users').doc(currentUser.uid).set({
-      payload: JSON.stringify(data),
+    db.collection('users').doc(uid).set({
+      payload,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).then(() => {
       setSyncStatus(navigator.onLine ? 'online' : 'offline');
+      // Only clear the pending flag if no newer edit has happened since
+      // this write started — otherwise we'd wrongly mark a later, still-
+      // unsynced change as "safe".
+      try{
+        const stillPending = localStorage.getItem(getPendingSyncKey(uid));
+        if(stillPending && parseInt(stillPending, 10) === version){
+          localStorage.removeItem(getPendingSyncKey(uid));
+        }
+      }catch(err){}
     }).catch(err => {
       console.error('Sync failed:', err);
       setSyncStatus('offline');
     });
   }, 500);
 }
+
+// Best-effort: if the page is being closed/reloaded while a sync is still
+// queued, try to flush it immediately instead of losing it to the timer.
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden' && syncDebounceTimer && currentUser){
+    clearTimeout(syncDebounceTimer);
+    db.collection('users').doc(currentUser.uid).set({
+      payload: JSON.stringify(data),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(() => {});
+  }
+});
 
 function setSyncStatus(state){
   const dot = document.getElementById('syncDot');
@@ -1469,6 +1507,19 @@ function startFirestoreSync(uid){
   if(firestoreUnsub) firestoreUnsub();
   firestoreUnsub = db.collection('users').doc(uid).onSnapshot(doc => {
     setSyncStatus(navigator.onLine ? 'online' : 'offline');
+
+    // If we still have a local change that hasn't been confirmed written to
+    // Firestore, this snapshot could be stale (e.g. it arrived right after
+    // a reload, before our own pending write went out). Applying it would
+    // silently erase the newer local edit. Instead, keep the local copy and
+    // push it to Firestore right now.
+    let pending = null;
+    try{ pending = localStorage.getItem(getPendingSyncKey(uid)); }catch(err){}
+    if(pending){
+      syncToFirestore(parseInt(pending, 10));
+      return;
+    }
+
     if(doc.exists){
       const remote = doc.data();
       if(remote && typeof remote.payload === 'string'){
@@ -1651,18 +1702,41 @@ let photos = [];
 let photosUnsub = null;
 document.getElementById('photoDate').value = toISO(new Date());
 
+// Firestore caps a document at 1 MiB (1,048,576 bytes). A photo is stored
+// as a base64 data URL inside its document, so we need real headroom under
+// that — otherwise the write fails silently and the photo only ever lives
+// in this browser's localStorage, never reaching other devices.
+const PHOTO_MAX_BASE64_BYTES = 700000; // ~700KB, leaves plenty of headroom under 1MiB
+
 function compressImage(file, maxWidth = 900, quality = 0.72){
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        let w = img.width, h = img.height;
-        if(w > maxWidth){ h = Math.round(h * (maxWidth / w)); w = maxWidth; }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
+        function render(width, q){
+          let w = width, h = img.height;
+          if(img.width > w){ h = Math.round(img.height * (w / img.width)); } else { w = img.width; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          return canvas.toDataURL('image/jpeg', q);
+        }
+        // Try progressively smaller/lower-quality passes until the encoded
+        // size is safely under Firestore's document limit.
+        const attempts = [
+          [maxWidth, quality], [maxWidth, 0.55], [700, 0.5],
+          [560, 0.45], [420, 0.4], [320, 0.35]
+        ];
+        let result = render(attempts[0][0], attempts[0][1]);
+        for(let i = 1; i < attempts.length && result.length > PHOTO_MAX_BASE64_BYTES; i++){
+          result = render(attempts[i][0], attempts[i][1]);
+        }
+        if(result.length > PHOTO_MAX_BASE64_BYTES){
+          reject(new Error('too-large'));
+          return;
+        }
+        resolve(result);
       };
       img.onerror = reject;
       img.src = e.target.result;
@@ -1683,15 +1757,41 @@ function loadPhotosLocalCache(uid){
 function savePhotosLocalCache(uid){
   try{ localStorage.setItem(getPhotosKey(uid), JSON.stringify(photos)); }catch(e){ console.error('Could not cache photos locally (may be too large for localStorage):', e); }
 }
+
+// Pushes any photo that only exists locally (never confirmed synced) up to
+// Firestore. Called after upload, when the app comes back online, and right
+// after the photo listener attaches — so a failed/interrupted sync retries
+// instead of silently staying stuck on one device forever.
+function pushUnsyncedPhotos(uid){
+  if(!currentUser || currentUser.uid !== uid) return;
+  photos.filter(p => p._synced === false).forEach(p => {
+    const { id, _synced, ...entry } = p;
+    db.collection('users').doc(uid).collection('photos').doc(p.id).set(entry)
+      .then(() => {
+        const match = photos.find(x => x.id === p.id);
+        if(match){ match._synced = true; savePhotosLocalCache(uid); renderPhotos(); }
+      })
+      .catch(err => console.error('Retry photo sync failed:', err));
+  });
+}
+
 function startPhotosSync(uid){
   if(photosUnsub) photosUnsub();
   photosUnsub = db.collection('users').doc(uid).collection('photos').orderBy('date')
     .onSnapshot(snap => {
-      photos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const serverPhotos = snap.docs.map(d => ({ id: d.id, ...d.data(), _synced: true }));
+      const serverIds = new Set(serverPhotos.map(p => p.id));
+      // Keep any local-only photos that haven't made it to the server yet
+      // (upload still in flight, failed, or offline) instead of dropping
+      // them just because this snapshot doesn't know about them yet.
+      const localOnly = photos.filter(p => p._synced === false && !serverIds.has(p.id));
+      photos = [...serverPhotos, ...localOnly].sort((a,b) => a.date.localeCompare(b.date));
       savePhotosLocalCache(uid);
       renderPhotos();
     }, err => console.error('Photo sync error:', err));
+  pushUnsyncedPhotos(uid);
 }
+window.addEventListener('online', () => { if(currentUser) pushUnsyncedPhotos(currentUser.uid); });
 
 document.getElementById('photoUploadBtn').addEventListener('click', () => document.getElementById('photoUpload').click());
 document.getElementById('photoUpload').addEventListener('change', async (e) => {
@@ -1700,18 +1800,29 @@ document.getElementById('photoUpload').addEventListener('change', async (e) => {
   if(!file) return;
   if(!currentUser){ alert('Please log in first.'); return; }
   const dateVal = document.getElementById('photoDate').value || toISO(new Date());
+  let imageData;
   try{
-    const imageData = await compressImage(file);
-    const docRef = db.collection('users').doc(currentUser.uid).collection('photos').doc();
-    const entry = { date: dateVal, imageData, createdAt: Date.now() };
-    photos.push({ id: docRef.id, ...entry });
-    photos.sort((a,b) => a.date.localeCompare(b.date));
-    savePhotosLocalCache(currentUser.uid);
-    renderPhotos();
-    docRef.set(entry).catch(err => console.error('Photo save failed:', err));
+    imageData = await compressImage(file);
   }catch(err){
-    alert('Could not process that image — try a different file.');
+    alert(err && err.message === 'too-large'
+      ? 'That photo is too large even after compression — try a smaller or simpler image.'
+      : 'Could not process that image — try a different file.');
+    return;
   }
+  const docRef = db.collection('users').doc(currentUser.uid).collection('photos').doc();
+  const entry = { date: dateVal, imageData, createdAt: Date.now() };
+  const uidAtUpload = currentUser.uid;
+  photos.push({ id: docRef.id, ...entry, _synced: false });
+  photos.sort((a,b) => a.date.localeCompare(b.date));
+  savePhotosLocalCache(uidAtUpload);
+  renderPhotos();
+  docRef.set(entry).then(() => {
+    const match = photos.find(p => p.id === docRef.id);
+    if(match){ match._synced = true; savePhotosLocalCache(uidAtUpload); renderPhotos(); }
+  }).catch(err => {
+    console.error('Photo save failed:', err);
+    alert('This photo saved on this device but could not sync to your account yet (offline, or the connection dropped). It will keep retrying, and stays visible here in the meantime — check the "Not synced" tag on it.');
+  });
 });
 
 function deletePhoto(id){
@@ -1733,6 +1844,7 @@ function renderPhotos(){
     grid.innerHTML = sortedDesc.map(p => `
       <div class="photo-tile" data-id="${p.id}">
         <img src="${p.imageData}" alt="${p.date}" loading="lazy">
+        ${p._synced === false ? '<div class="photo-unsynced" title="Only saved on this device so far — will sync when back online">Not synced</div>' : ''}
         <button class="photo-del" data-id="${p.id}" title="Delete">✕</button>
         <div class="photo-date">${fmtDate(p.date)}</div>
       </div>

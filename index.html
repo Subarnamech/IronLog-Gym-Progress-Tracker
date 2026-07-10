@@ -21,11 +21,28 @@
     --ember-dim:#ff6b3530;
     --iron-green:#4cb782;
     --hairline:#34363d;
+    --bg-glow:#1c1c20;
+    --row-selected:#2c211a;
+    --table-border:#25272d;
+  }
+  body.light-mode{
+    --charcoal:#f3f2ee;
+    --steel:#ffffff;
+    --steel-2:#eeece5;
+    --chalk:#1b1b1d;
+    --chalk-dim:#68686f;
+    --ember:#e85a25;
+    --ember-dim:#e85a2520;
+    --iron-green:#2f8f5b;
+    --hairline:#dedad0;
+    --bg-glow:#ffffff;
+    --row-selected:#fbe9de;
+    --table-border:#e7e4db;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     background:
-      radial-gradient(circle at 10% 0%, #1c1c20 0%, var(--charcoal) 45%);
+      radial-gradient(circle at 10% 0%, var(--bg-glow) 0%, var(--charcoal) 45%);
     color:var(--chalk);
     font-family:'Inter', sans-serif;
     min-height:100vh;
@@ -151,10 +168,30 @@
     font-weight:700; font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;
   }
   .transform-view-toggle{display:flex; gap:6px;}
-  .photo-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:14px;}
+  .photo-grid{display:flex; flex-direction:column; gap:26px;}
+  .photo-month-row{}
+  .photo-month-label{
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--chalk-dim);
+    margin-bottom:10px; display:flex; align-items:center; gap:8px; letter-spacing:.3px;
+  }
+  .photo-month-count{
+    background:var(--steel-2); border:1px solid var(--hairline); border-radius:10px;
+    padding:1px 8px; font-size:11px; color:var(--chalk);
+  }
+  .photo-month-scroll-wrap{display:flex; align-items:center; gap:8px;}
+  .photo-month-track{
+    display:flex; gap:14px; overflow-x:auto; scroll-behavior:smooth;
+    padding-bottom:6px; -webkit-overflow-scrolling:touch; scrollbar-width:thin;
+  }
+  .photo-scroll-btn{
+    flex:none; width:34px; height:34px; border-radius:50%; border:1px solid var(--hairline);
+    background:var(--steel); color:var(--chalk); font-size:18px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:.15s; line-height:1;
+  }
+  .photo-scroll-btn:hover{border-color:var(--ember); color:var(--ember);}
   .photo-tile{
     position:relative; background:var(--steel-2); border:1px solid var(--hairline); border-radius:8px;
-    overflow:hidden; aspect-ratio:3/4;
+    overflow:hidden; aspect-ratio:3/4; width:150px; flex:none;
   }
   .photo-tile img{width:100%; height:100%; object-fit:cover; display:block;}
   .photo-tile .photo-date{
@@ -175,13 +212,6 @@
   .interval-strip{display:flex; gap:14px; overflow-x:auto; padding-bottom:8px;}
   .interval-strip .photo-tile{min-width:150px; flex:none;}
   .photo-tile{cursor:zoom-in;}
-
-  /* ---- Status strip (location/time) ---- */
-  .status-strip{
-    display:flex; gap:8px; align-items:center; color:var(--chalk-dim); font-size:12px;
-    font-family:'JetBrains Mono',monospace; margin-bottom:20px; flex-wrap:wrap;
-  }
-  .status-sep{opacity:.5;}
 
   /* ---- Photo lightbox ---- */
   .lightbox{
@@ -234,15 +264,26 @@
 
   label{display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--chalk-dim); margin-bottom:6px; margin-top:14px;}
   label:first-of-type{margin-top:0;}
-  input, select{
+  input, select, textarea{
     width:100%; background:var(--steel-2); border:1px solid var(--hairline); color:var(--chalk);
     padding:10px 12px; border-radius:6px; font-size:14px; font-family:'Inter',sans-serif;
   }
-  input:focus, select:focus{outline:none; border-color:var(--ember);}
+  input:focus, select:focus, textarea:focus{outline:none; border-color:var(--ember);}
+  textarea{resize:vertical; min-height:44px; font-family:'Inter',sans-serif;}
   .row3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
 
-  .set-rows{display:flex; flex-direction:column; gap:8px; margin-top:8px;}
+  .note-items{display:flex; flex-direction:column; gap:8px; margin-top:6px;}
+  .note-item{display:flex; align-items:center; gap:8px;}
+  .note-item .note-check{width:16px; height:16px; min-width:16px; accent-color:var(--ember); cursor:pointer;}
+  .note-item .note-text{flex:1; margin-top:0;}
+
+  .set-rows{display:flex; flex-direction:column; gap:14px; margin-top:8px;}
+  .set-block{display:flex; flex-direction:column; gap:8px;}
   .set-row{display:grid; grid-template-columns:50px 1fr 1fr; gap:10px; align-items:center;}
+  .set-type{font-size:12px; padding:7px 10px; width:auto; align-self:flex-start; min-width:130px; color:var(--chalk-dim);}
+  .drop-rows{display:flex; flex-direction:column; gap:8px; padding:10px; background:var(--steel-2); border:1px dashed var(--hairline); border-radius:8px;}
+  .drop-rows.hidden{display:none;}
+  .drop-row .set-tag{background:var(--charcoal);}
   .set-row .set-tag{
     font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--chalk-dim);
     background:var(--steel-2); border:1px solid var(--hairline); border-radius:6px;
@@ -269,7 +310,7 @@
     padding:12px 14px; cursor:pointer; transition:.15s;
   }
   .ex-chip:hover{border-color:var(--ember);}
-  .ex-chip.active{border-color:var(--ember); background:#2c211a;}
+  .ex-chip.active{border-color:var(--ember); background:var(--row-selected);}
   .ex-name{font-size:14px; font-weight:600;}
   .ex-meta{font-size:12px; color:var(--chalk-dim); font-family:'JetBrains Mono',monospace;}
   .ex-trend{font-size:12px; font-weight:700; font-family:'JetBrains Mono',monospace;}
@@ -291,7 +332,7 @@
     text-align:left; color:var(--chalk-dim); font-weight:500; font-size:11px;
     text-transform:uppercase; letter-spacing:0.5px; padding:6px 8px; border-bottom:1px solid var(--hairline);
   }
-  .history-table td{padding:8px; border-bottom:1px solid #25272d; font-family:'JetBrains Mono',monospace;}
+  .history-table td{padding:8px; border-bottom:1px solid var(--table-border); font-family:'JetBrains Mono',monospace;}
   .history-table tr:hover{background:var(--steel-2);}
   .del-btn{background:none; border:none; color:var(--chalk-dim); cursor:pointer; font-size:14px;}
   .del-btn:hover{color:var(--ember);}
@@ -331,6 +372,29 @@
     font-size:13px; text-transform:uppercase; letter-spacing:0.8px; color:var(--chalk-dim);
     margin-bottom:4px; font-family:'JetBrains Mono',monospace;
   }
+  .chart-title-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;}
+  .chart-title-row .chart-title{margin-bottom:0;}
+  .notes-toggle-btn{padding:5px 10px; font-size:11px; flex:none;}
+  .notes-col{max-width:220px; white-space:pre-wrap; word-break:break-word; font-family:'Inter',sans-serif;}
+  .empty-cell{color:var(--chalk-dim);}
+
+  .ex-note-box{
+    margin-top:14px; background:var(--steel-2); border:1px solid var(--hairline); border-left:3px solid var(--ember);
+    border-radius:8px; padding:12px 14px;
+  }
+  .ex-note-label{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.8px; color:var(--chalk-dim);
+    font-family:'JetBrains Mono',monospace; margin-bottom:6px;
+  }
+  .ex-note-display{
+    font-size:14px; color:var(--chalk); line-height:1.5; cursor:text; white-space:pre-wrap; word-break:break-word;
+    min-height:20px; padding:2px 4px; border-radius:4px;
+  }
+  .ex-note-display:hover{background:var(--steel);}
+  .ex-note-display.placeholder{color:var(--chalk-dim); font-style:italic;}
+  .ex-note-display.hidden{display:none;}
+  .ex-note-edit.hidden{display:none;}
+  .ex-note-edit{margin-top:0;}
   /* ── new features ────────────────────────────────────── */
   .ghost-btn:disabled{opacity:0.3; cursor:not-allowed; pointer-events:none;}
   .ghost-btn.danger{color:#e05252; border-color:#e0525240;}
@@ -341,12 +405,12 @@
   .select-count{font-size:12px; color:var(--chalk-dim); flex:1; font-family:'JetBrains Mono',monospace;}
   .ex-chip .ex-cb{width:16px; height:16px; min-width:16px; border:2px solid var(--chalk-dim); border-radius:4px; margin-right:10px; display:flex; align-items:center; justify-content:center; font-size:9px; transition:.12s; flex-shrink:0;}
   .ex-chip.sel-checked .ex-cb{background:var(--ember); border-color:var(--ember); color:#1a1208;}
-  .ex-chip.sel-checked{border-color:var(--ember); background:#2c211a;}
+  .ex-chip.sel-checked{border-color:var(--ember); background:var(--row-selected);}
   .card-header-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
   .card-header-row h2{margin-bottom:0;}
   .history-table .check-col{width:28px; text-align:center; padding:4px 4px;}
   .row-cb{cursor:pointer; accent-color:var(--ember); width:14px; height:14px;}
-  .history-table tr.row-selected td{background:#2c211a;}
+  .history-table tr.row-selected td{background:var(--row-selected);}
   .table-bulk{display:flex; align-items:center; gap:10px; margin-top:8px; padding:8px 10px; background:var(--steel-2); border-radius:6px; border:1px solid var(--hairline); font-size:12px; color:var(--chalk-dim);}
   .table-bulk.hidden{display:none;}
   .table-bulk-count{flex:1; font-family:'JetBrains Mono',monospace;}
@@ -363,23 +427,36 @@
   .modal-confirm:hover{filter:brightness(1.1);}
 
   /* ---- Mobile ---- */
-  html{overflow-x:hidden;}
   body{overflow-x:hidden;}
+  .table-scroll{position:relative;}
+  .table-scroll::after{
+    content:''; position:absolute; top:0; right:0; bottom:0; width:24px; pointer-events:none;
+    background:linear-gradient(to right, transparent, var(--charcoal));
+  }
   @media (max-width:640px){
     body{padding:20px 14px 60px;}
-    .brand h1{font-size:36px;}
+    .brand h1{font-size:34px;}
+    .brand p{font-size:11px;}
     header{gap:14px; padding-bottom:16px; margin-bottom:22px;}
     .data-actions{gap:6px;}
-    .ghost-btn{font-size:11px; padding:7px 10px;}
+    .ghost-btn{font-size:12px; padding:8px 11px;}
     .header-sep{display:none;}
     .main-tabs{gap:4px;}
     .main-tab{font-size:13px; padding:8px 10px;}
     .card, .howto-card{padding:16px;}
-    .set-row{grid-template-columns:44px 1fr 1fr; gap:6px;}
     .chart-resize-box{padding:0 0 14px 0;}
     .chart-h-resizer{display:none;} /* dragging to resize doesn't work well with touch scroll; width auto-fits screen instead */
-    .status-strip{font-size:11px;}
+    .history-table{min-width:0; font-size:12px;}
+    .history-table th:nth-child(3), .history-table td:nth-child(3){display:none;} /* hide "Split" column to reduce need for scrolling */
+    .history-table th, .history-table td{padding:6px;}
+    .set-type{font-size:11px; padding:6px 8px; min-width:110px;}
+    .drop-rows{padding:8px; gap:6px;}
+    .set-rows{gap:10px;}
+    .photo-tile{width:120px;}
+    .photo-scroll-btn{width:28px; height:28px; font-size:15px;}
+    .photo-month-track{gap:10px;}
   }
+
 </style>
 </head>
 <body>
@@ -426,16 +503,11 @@
       <input type="file" id="importCsvFile" accept=".csv,text/csv">
       <div class="header-sep"></div>
       <button class="ghost-btn" id="unitToggleBtn">Units: KG</button>
+      <button class="ghost-btn" id="themeToggleBtn" title="Switch between dark and light mode">🌙 Dark</button>
       <div class="sync-badge" id="syncBadge"><span class="sync-dot" id="syncDot"></span><span id="syncText">—</span></div>
       <button class="ghost-btn" id="logoutBtn">Log out</button>
     </div>
   </header>
-
-  <div class="status-strip" id="statusStrip">
-    <span id="statusLocation">📍 Locating…</span>
-    <span class="status-sep">·</span>
-    <span id="statusDateTime">—</span>
-  </div>
 
   <div class="notice hidden" id="fileProtocolWarning">
     <b>Heads up:</b> you're opening this file directly from disk (file://). Some browsers won't reliably keep you logged in or persist offline data across reloads in this mode. For dependable saving, serve this file over http/https instead — e.g. run a local server, or host it on something like GitHub Pages or Netlify.
@@ -448,6 +520,11 @@
   </div>
 
   <div class="tab-panel active" id="tabPanel-log">
+
+  <div class="notice hidden" id="photoSyncBanner">
+    <b id="photoSyncBannerText"></b>
+    <button class="ghost-btn" id="photoSyncBannerBtn" style="margin-left:10px;">View in Transformation Log</button>
+  </div>
 
   <div class="streak-card" id="streakCard">
     <div class="streak-main">
@@ -471,20 +548,97 @@
 
       <label>Sets</label>
       <div class="set-rows">
-        <div class="set-row">
-          <div class="set-tag">SET 1</div>
-          <input type="number" class="set-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="0">
-          <input type="number" class="set-reps" min="1" placeholder="Reps" data-set="0">
+        <div class="set-block" data-set="0">
+          <div class="set-row">
+            <div class="set-tag">SET 1</div>
+            <input type="number" class="set-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="0">
+            <input type="number" class="set-reps" min="1" placeholder="Reps" data-set="0">
+          </div>
+          <select class="set-type" data-set="0">
+            <option value="normal">Normal set</option>
+            <option value="drop">Drop set</option>
+          </select>
+          <div class="drop-rows hidden" data-set="0">
+            <div class="set-row drop-row">
+              <div class="set-tag">D1</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="0" data-drop="0">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="0" data-drop="0">
+            </div>
+            <div class="set-row drop-row">
+              <div class="set-tag">D2</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="0" data-drop="1">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="0" data-drop="1">
+            </div>
+            <div class="set-row drop-row">
+              <div class="set-tag">D3</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="0" data-drop="2">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="0" data-drop="2">
+            </div>
+          </div>
         </div>
-        <div class="set-row">
-          <div class="set-tag">SET 2</div>
-          <input type="number" class="set-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="1">
-          <input type="number" class="set-reps" min="1" placeholder="Reps" data-set="1">
+        <div class="set-block" data-set="1">
+          <div class="set-row">
+            <div class="set-tag">SET 2</div>
+            <input type="number" class="set-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="1">
+            <input type="number" class="set-reps" min="1" placeholder="Reps" data-set="1">
+          </div>
+          <select class="set-type" data-set="1">
+            <option value="normal">Normal set</option>
+            <option value="drop">Drop set</option>
+          </select>
+          <div class="drop-rows hidden" data-set="1">
+            <div class="set-row drop-row">
+              <div class="set-tag">D1</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="1" data-drop="0">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="1" data-drop="0">
+            </div>
+            <div class="set-row drop-row">
+              <div class="set-tag">D2</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="1" data-drop="1">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="1" data-drop="1">
+            </div>
+            <div class="set-row drop-row">
+              <div class="set-tag">D3</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="1" data-drop="2">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="1" data-drop="2">
+            </div>
+          </div>
         </div>
-        <div class="set-row">
-          <div class="set-tag">SET 3</div>
-          <input type="number" class="set-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="2">
-          <input type="number" class="set-reps" min="1" placeholder="Reps" data-set="2">
+        <div class="set-block" data-set="2">
+          <div class="set-row">
+            <div class="set-tag">SET 3</div>
+            <input type="number" class="set-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="2">
+            <input type="number" class="set-reps" min="1" placeholder="Reps" data-set="2">
+          </div>
+          <select class="set-type" data-set="2">
+            <option value="normal">Normal set</option>
+            <option value="drop">Drop set</option>
+          </select>
+          <div class="drop-rows hidden" data-set="2">
+            <div class="set-row drop-row">
+              <div class="set-tag">D1</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="2" data-drop="0">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="2" data-drop="0">
+            </div>
+            <div class="set-row drop-row">
+              <div class="set-tag">D2</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="2" data-drop="1">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="2" data-drop="1">
+            </div>
+            <div class="set-row drop-row">
+              <div class="set-tag">D3</div>
+              <input type="number" class="set-weight drop-weight" min="0" step="0.5" placeholder="Weight (kg)" data-set="2" data-drop="2">
+              <input type="number" class="set-reps drop-reps" min="1" placeholder="Reps" data-set="2" data-drop="2">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <label>Notes (optional)</label>
+      <div class="note-items" id="noteItems">
+        <div class="note-item" data-idx="0">
+          <input type="checkbox" class="note-check" data-idx="0" title="Tick to confirm this note and add another">
+          <input type="text" class="note-text" data-idx="0" placeholder="Note 1">
         </div>
       </div>
 
@@ -706,11 +860,36 @@ function applyWeightUnitToUI(){
 document.getElementById('unitToggleBtn').addEventListener('click', () => {
   setWeightUnit(weightUnit === 'kg' ? 'lb' : 'kg');
 });
+
+// ---- Theme (dark/light) ----
+// Device-level preference (not tied to account), same pattern as remembering
+// units, but kept local-only since it's a display preference, not data.
+function applyThemeToUI(theme){
+  document.body.classList.toggle('light-mode', theme === 'light');
+  const btn = document.getElementById('themeToggleBtn');
+  if(btn) btn.textContent = theme === 'light' ? '☀️ Light' : '🌙 Dark';
+}
+function loadTheme(){
+  let theme = 'dark';
+  try{
+    const saved = localStorage.getItem('ironlog-theme');
+    if(saved === 'light' || saved === 'dark') theme = saved;
+    else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) theme = 'light';
+  }catch(e){}
+  applyThemeToUI(theme);
+}
+document.getElementById('themeToggleBtn').addEventListener('click', () => {
+  const next = document.body.classList.contains('light-mode') ? 'dark' : 'light';
+  try{ localStorage.setItem('ironlog-theme', next); }catch(e){}
+  applyThemeToUI(next);
+});
+loadTheme();
 let currentUser = null;
 let firestoreUnsub = null;
 let suppressNextSnapshotSave = false; // avoid re-writing data we just received from a snapshot
 let selectedEx = null;
 let activeSplit = null; // null = "All"
+let notesVisible = false; // toggled by the Notes button next to Average Volume
 
 // ── history ──────────────────────────────────────────────
 let undoStack = [];
@@ -848,6 +1027,52 @@ const exSuggestions = document.getElementById('exSuggestions');
 
 dateInput.valueAsDate = new Date();
 
+/* ---------------- Autofill sets from the previous session ----------------
+   When an exercise (and optionally its split) is entered, prefill the set
+   weight/reps inputs with the values from the most recent matching session,
+   so the user only needs to change whatever's different. Notes are never
+   autofilled. */
+function autofillFromPreviousSession(){
+  const name = exNameInput.value.trim();
+  const split = splitInput.value.trim();
+  if(!name || !data[name] || !data[name].length) return;
+
+  let candidates = data[name]; // sorted ascending by date
+  if(split){
+    const filtered = candidates.filter(e => e.split === split);
+    if(filtered.length) candidates = filtered;
+  }
+  const prev = candidates[candidates.length - 1];
+  if(!prev || !prev.sets || !prev.sets.length) return;
+
+  prev.sets.slice(0, 3).forEach((s, i) => {
+    const typeSel = document.querySelector(`.set-type[data-set="${i}"]`);
+    const wantDrop = s.type === 'drop' && Array.isArray(s.drops) && s.drops.length;
+    if(typeSel){
+      typeSel.value = wantDrop ? 'drop' : 'normal';
+      toggleSetType(i);
+    }
+    if(wantDrop){
+      s.drops.slice(0, 3).forEach((d, di) => {
+        const wInp = document.querySelector(`.drop-weight[data-set="${i}"][data-drop="${di}"]`);
+        const rInp = document.querySelector(`.drop-reps[data-set="${i}"][data-drop="${di}"]`);
+        if(wInp) wInp.value = dispW(d.weight);
+        if(rInp) rInp.value = d.reps;
+      });
+    }else{
+      const wInp = document.querySelector(`.set-weight[data-set="${i}"]:not(.drop-weight)`);
+      const rInp = document.querySelector(`.set-reps[data-set="${i}"]:not(.drop-reps)`);
+      if(wInp) wInp.value = dispW(s.weight);
+      if(rInp) rInp.value = s.reps;
+    }
+  });
+  renderPlates();
+}
+[exNameInput, splitInput].forEach(inp => {
+  inp.addEventListener('change', autofillFromPreviousSession);
+  inp.addEventListener('input', autofillFromPreviousSession);
+});
+
 // Drag-to-resize the "Log a Set" card width
 (function setupGridResizer(){
   const resizer = document.getElementById('gridResizer');
@@ -947,6 +1172,10 @@ function fmtDate(d){
   return dt.toLocaleDateString('en-GB', {day:'2-digit', month:'short'});
 }
 
+function escAttr(s){
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+
 function estOneRepMax(weight, reps){
   return weight * (1 + reps/30); // Epley formula
 }
@@ -955,8 +1184,17 @@ function topSet(entry){
   return entry.sets.reduce((best, s) => s.weight > best.weight ? s : best, entry.sets[0]);
 }
 
+// Total weight moved in a single set — for a drop set this sums every
+// weight×reps stage (the initial weight plus each drop), not just the first.
+function setVolume(s){
+  if(s.type === 'drop' && Array.isArray(s.drops) && s.drops.length){
+    return s.drops.reduce((sum, d) => sum + d.weight * d.reps, 0);
+  }
+  return s.weight * s.reps;
+}
+
 function avgVolume(entry){
-  const total = entry.sets.reduce((sum, s) => sum + s.weight * s.reps, 0);
+  const total = entry.sets.reduce((sum, s) => sum + setVolume(s), 0);
   return total / entry.sets.length;
 }
 
@@ -1215,19 +1453,33 @@ function renderDetail(){
     const dataIdx = data[selectedEx].indexOf(e);
     const t = topSet(e);
     const isBest = t.weight === maxWeight;
-    const setsDesc = e.sets.map(s => `${dispW(s.weight)}×${s.reps}`).join(' / ');
+    const setsDesc = e.sets.map(s => {
+      if(s.type === 'drop' && Array.isArray(s.drops) && s.drops.length){
+        return s.drops.map(d => `${dispW(d.weight)}×${d.reps}`).join('→') + ' (drop)';
+      }
+      return `${dispW(s.weight)}×${s.reps}`;
+    }).join(' / ');
+    const noteCell = notesVisible ? `<td class="notes-col">${e.notes ? escAttr(e.notes) : '<span class="empty-cell">–</span>'}</td>` : '';
     return `<tr data-idx="${dataIdx}">
       <td class="check-col"><input type="checkbox" class="row-cb entry-cb" data-idx="${dataIdx}"></td>
       <td>${fmtDate(e.date)}</td>
       <td>${e.split || '–'}</td>
       <td>${setsDesc} ${isBest ? '<span class="best-badge">PR</span>' : ''}</td>
       <td>${dispW(avgVolume(e)).toFixed(1)}${weightUnit}</td>
+      ${noteCell}
       <td><button class="del-btn" data-idx="${dataIdx}" title="Delete entry">✕</button></td>
     </tr>`;
   }).join('');
 
+  const savedNote = exerciseNotes[selectedEx] || '';
+
   detailPanel.innerHTML = `
     <h2 style="margin-top:24px;">${selectedEx} — PROGRESS</h2>
+    <div class="ex-note-box">
+      <div class="ex-note-label">Note</div>
+      <div class="ex-note-display ${savedNote ? '' : 'placeholder'}" id="exNoteDisplay">${savedNote ? escAttr(savedNote) : 'Click to add a note for this exercise…'}</div>
+      <textarea class="ex-note-edit hidden" id="exNoteEdit" rows="2" placeholder="Note for ${escAttr(selectedEx)}…">${escAttr(savedNote)}</textarea>
+    </div>
     <div class="chart-grid">
       <div>
         <div class="chart-title">Top set weight</div>
@@ -1238,7 +1490,10 @@ function renderDetail(){
         </div>
       </div>
       <div>
-        <div class="chart-title">Average volume</div>
+        <div class="chart-title-row">
+          <div class="chart-title">Average volume</div>
+          <button class="ghost-btn notes-toggle-btn" id="notesToggleBtn">${notesVisible ? '🙈 Hide Notes' : '📝 Notes'}</button>
+        </div>
         <div class="chart-resize-box">
           <div class="chart-wrap">${volumeChart}</div>
           <div class="chart-h-resizer" data-target="chart-volume" title="Drag to resize width"></div>
@@ -1250,7 +1505,7 @@ function renderDetail(){
     <table class="history-table">
       <thead><tr>
         <th class="check-col"><input type="checkbox" class="row-cb" id="selectAllEntries" title="Select all sessions"></th>
-        <th>Date</th><th>Split</th><th>Sets (wt×reps)</th><th>Avg Vol</th><th></th>
+        <th>Date</th><th>Split</th><th>Sets (wt×reps)</th><th>Avg Vol</th>${notesVisible ? '<th>Notes</th>' : ''}<th></th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -1264,6 +1519,40 @@ function renderDetail(){
   // chart resize handles (drag edges instead of sliders)
   detailPanel.querySelectorAll('.chart-h-resizer').forEach(handle => bindChartResize(handle, 'width', 300, 900));
   detailPanel.querySelectorAll('.chart-v-resizer').forEach(handle => bindChartResize(handle, 'height', 150, 500));
+
+  // Notes toggle — click to reveal the Notes column in the history table, click again to hide it
+  const notesToggleBtn = document.getElementById('notesToggleBtn');
+  if(notesToggleBtn){
+    notesToggleBtn.addEventListener('click', () => {
+      notesVisible = !notesVisible;
+      renderDetail();
+    });
+  }
+
+  // Global per-exercise note — click the display text to edit, save on blur/Enter
+  const exNoteDisplay = document.getElementById('exNoteDisplay');
+  const exNoteEdit = document.getElementById('exNoteEdit');
+  if(exNoteDisplay && exNoteEdit){
+    exNoteDisplay.addEventListener('click', () => {
+      exNoteDisplay.classList.add('hidden');
+      exNoteEdit.classList.remove('hidden');
+      exNoteEdit.focus();
+      exNoteEdit.setSelectionRange(exNoteEdit.value.length, exNoteEdit.value.length);
+    });
+    const saveExNote = () => {
+      const text = exNoteEdit.value.trim();
+      setExerciseNote(selectedEx, text);
+      exNoteDisplay.textContent = text || 'Click to add a note for this exercise…';
+      exNoteDisplay.classList.toggle('placeholder', !text);
+      exNoteEdit.classList.add('hidden');
+      exNoteDisplay.classList.remove('hidden');
+    };
+    exNoteEdit.addEventListener('blur', saveExNote);
+    exNoteEdit.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); exNoteEdit.blur(); }
+      else if(e.key === 'Escape'){ exNoteEdit.value = exerciseNotes[selectedEx] || ''; exNoteEdit.blur(); }
+    });
+  }
 
   // single-row delete ✕
   detailPanel.querySelectorAll('.del-btn').forEach(btn => {
@@ -1324,19 +1613,111 @@ function renderDetail(){
   });
 }
 
+/* ---------------- Dynamic tick-box note items (Log a Set form) ----------------
+   Starts with one checkbox+text row ("Note 1"). Ticking a row's checkbox reveals
+   a new blank row below it ("Note 2", "Note 3", ...). Unticking a row removes any
+   rows added after it. Only checked/filled rows are unused for storage — all
+   non-empty text values are combined into the entry's notes string on save. */
+function noteItemRowHtml(idx){
+  return `<div class="note-item" data-idx="${idx}">
+    <input type="checkbox" class="note-check" data-idx="${idx}" title="Tick to confirm this note and add another">
+    <input type="text" class="note-text" data-idx="${idx}" placeholder="Note ${idx + 1}">
+  </div>`;
+}
+function wireNoteItemRow(rowEl){
+  const idx = parseInt(rowEl.dataset.idx, 10);
+  const cb = rowEl.querySelector('.note-check');
+  cb.addEventListener('change', () => {
+    const container = document.getElementById('noteItems');
+    if(cb.checked){
+      // Only add a new row if this was the last one in the list.
+      if(idx === container.children.length - 1){
+        addNoteItemRow();
+      }
+    }else{
+      // Remove any rows that were added after this one.
+      while(container.children.length > idx + 1){
+        container.removeChild(container.lastElementChild);
+      }
+    }
+  });
+}
+function addNoteItemRow(){
+  const container = document.getElementById('noteItems');
+  if(!container) return;
+  const idx = container.children.length;
+  container.insertAdjacentHTML('beforeend', noteItemRowHtml(idx));
+  wireNoteItemRow(container.lastElementChild);
+}
+function resetNoteItems(){
+  const container = document.getElementById('noteItems');
+  if(!container) return;
+  container.innerHTML = noteItemRowHtml(0);
+  wireNoteItemRow(container.firstElementChild);
+}
+function collectNoteItemsText(){
+  const container = document.getElementById('noteItems');
+  if(!container) return '';
+  return [...container.querySelectorAll('.note-text')]
+    .map(inp => inp.value.trim())
+    .filter(Boolean)
+    .join('\n');
+}
+document.querySelectorAll('#noteItems .note-item').forEach(wireNoteItemRow);
+
+function toggleSetType(setIdx){
+  const select = document.querySelector(`.set-type[data-set="${setIdx}"]`);
+  if(!select) return;
+  const isDrop = select.value === 'drop';
+  const dropBox = document.querySelector(`.drop-rows[data-set="${setIdx}"]`);
+  const mainWeight = document.querySelector(`.set-weight[data-set="${setIdx}"]:not(.drop-weight)`);
+  const mainReps = document.querySelector(`.set-reps[data-set="${setIdx}"]:not(.drop-reps)`);
+  if(dropBox) dropBox.classList.toggle('hidden', !isDrop);
+  if(mainWeight) mainWeight.style.display = isDrop ? 'none' : '';
+  if(mainReps) mainReps.style.display = isDrop ? 'none' : '';
+  // Clear whichever input set just got hidden so stale values never sneak into a log.
+  if(isDrop){
+    if(mainWeight) mainWeight.value = '';
+    if(mainReps) mainReps.value = '';
+  }else{
+    document.querySelectorAll(`.drop-weight[data-set="${setIdx}"], .drop-reps[data-set="${setIdx}"]`).forEach(inp => inp.value = '');
+  }
+  renderPlates();
+}
+document.querySelectorAll('.set-type').forEach(sel => {
+  sel.addEventListener('change', () => toggleSetType(sel.dataset.set));
+});
+
 document.getElementById('logBtn').addEventListener('click', () => {
   const name = exNameInput.value.trim();
   const split = splitInput.value.trim();
   const date = dateInput.value || new Date().toISOString().slice(0,10);
+  const notes = collectNoteItemsText();
 
   const sets = [];
-  setWeightInputs.forEach((inp, i) => {
-    const enteredWeight = parseFloat(inp.value);
-    const reps = parseInt(setRepsInputs[i].value);
-    if(!isNaN(enteredWeight) && !isNaN(reps)){
-      sets.push({weight: toKg(enteredWeight), reps});
+  for(let i = 0; i < 3; i++){
+    const typeSel = document.querySelector(`.set-type[data-set="${i}"]`);
+    const isDrop = typeSel && typeSel.value === 'drop';
+    if(isDrop){
+      const drops = [];
+      for(let d = 0; d < 3; d++){
+        const wInp = document.querySelector(`.drop-weight[data-set="${i}"][data-drop="${d}"]`);
+        const rInp = document.querySelector(`.drop-reps[data-set="${i}"][data-drop="${d}"]`);
+        const w = parseFloat(wInp ? wInp.value : NaN);
+        const r = parseInt(rInp ? rInp.value : NaN);
+        if(!isNaN(w) && !isNaN(r)) drops.push({weight: toKg(w), reps: r});
+      }
+      if(drops.length){
+        sets.push({type: 'drop', weight: drops[0].weight, reps: drops[0].reps, drops});
+      }
+    }else{
+      const wInp = document.querySelector(`.set-weight[data-set="${i}"]:not(.drop-weight)`);
+      const rInp = document.querySelector(`.set-reps[data-set="${i}"]:not(.drop-reps)`);
+      const w = parseFloat(wInp ? wInp.value : NaN);
+      const r = parseInt(rInp ? rInp.value : NaN);
+      if(!isNaN(w) && !isNaN(r)) sets.push({type: 'normal', weight: toKg(w), reps: r});
     }
-  });
+  }
 
   if(!name || sets.length === 0){
     alert('Enter an exercise name and at least one set (weight + reps) before logging.');
@@ -1345,7 +1726,9 @@ document.getElementById('logBtn').addEventListener('click', () => {
 
   pushHistory();
   if(!data[name]) data[name] = [];
-  data[name].push({date, split, sets});
+  const entry = {date, split, sets};
+  if(notes) entry.notes = notes;
+  data[name].push(entry);
   data[name].sort((a,b) => a.date.localeCompare(b.date));
 
   selectedEx = name;
@@ -1353,6 +1736,8 @@ document.getElementById('logBtn').addEventListener('click', () => {
   splitInput.value = '';
   setWeightInputs.forEach(inp => inp.value = '');
   setRepsInputs.forEach(inp => inp.value = '');
+  resetNoteItems();
+  document.querySelectorAll('.set-type').forEach(sel => { sel.value = 'normal'; toggleSetType(sel.dataset.set); });
   renderPlates();
   refreshSuggestions();
   renderExerciseList();
@@ -1376,18 +1761,23 @@ function csvEscape(val){
 }
 
 document.getElementById('exportCsvBtn').addEventListener('click', () => {
-  const header = ['exercise','date','split','set','weight','reps'];
+  const header = ['exercise','date','split','set','weight','reps','type','drops','notes'];
   const rows = [header.join(',')];
   Object.keys(data).forEach(name => {
     data[name].forEach(entry => {
       entry.sets.forEach((s, i) => {
+        const isDrop = s.type === 'drop' && Array.isArray(s.drops) && s.drops.length;
+        const dropsStr = isDrop ? s.drops.map(d => `${d.weight}x${d.reps}`).join('|') : '';
         rows.push([
           csvEscape(name),
           csvEscape(entry.date),
           csvEscape(entry.split || ''),
           i + 1,
           s.weight,
-          s.reps
+          s.reps,
+          isDrop ? 'drop' : 'normal',
+          csvEscape(dropsStr),
+          csvEscape(entry.notes || '')
         ].join(','));
       });
     });
@@ -1467,7 +1857,10 @@ document.getElementById('importCsvFile').addEventListener('change', (e) => {
         date: header.indexOf('date'),
         split: header.indexOf('split'),
         weight: header.indexOf('weight'),
-        reps: header.indexOf('reps')
+        reps: header.indexOf('reps'),
+        type: header.indexOf('type'),
+        drops: header.indexOf('drops'),
+        notes: header.indexOf('notes')
       };
       if(idx.exercise === -1 || idx.date === -1 || idx.weight === -1 || idx.reps === -1){
         throw new Error('missing columns');
@@ -1486,13 +1879,32 @@ document.getElementById('importCsvFile').addEventListener('change', (e) => {
         if(!name || !date || isNaN(weight) || isNaN(reps)) continue;
         const key = name + '|' + date + '|' + split;
         if(!sessionMap.has(key)){
-          sessionMap.set(key, {name, date, split, sets:[]});
+          sessionMap.set(key, {name, date, split, sets:[], notes: ''});
         }
-        sessionMap.get(key).sets.push({weight, reps});
+        const session = sessionMap.get(key);
+        const typeVal = idx.type !== -1 ? (row[idx.type] || '').trim().toLowerCase() : 'normal';
+        const dropsStr = idx.drops !== -1 ? (row[idx.drops] || '').trim() : '';
+        if(typeVal === 'drop' && dropsStr){
+          const drops = dropsStr.split('|').map(pair => {
+            const [w, rp] = pair.split('x').map(v => parseFloat(v));
+            return (!isNaN(w) && !isNaN(rp)) ? {weight: w, reps: rp} : null;
+          }).filter(Boolean);
+          if(drops.length){
+            session.sets.push({type: 'drop', weight: drops[0].weight, reps: drops[0].reps, drops});
+          }else{
+            session.sets.push({type: 'normal', weight, reps});
+          }
+        }else{
+          session.sets.push({type: 'normal', weight, reps});
+        }
+        const noteVal = idx.notes !== -1 ? (row[idx.notes] || '').trim() : '';
+        if(noteVal && !session.notes) session.notes = noteVal;
       }
       sessionMap.forEach(session => {
         if(!newData[session.name]) newData[session.name] = [];
-        newData[session.name].push({date: session.date, split: session.split, sets: session.sets});
+        const entry = {date: session.date, split: session.split, sets: session.sets};
+        if(session.notes) entry.notes = session.notes;
+        newData[session.name].push(entry);
       });
       Object.keys(newData).forEach(name => {
         newData[name].sort((a,b) => a.date.localeCompare(b.date));
@@ -1558,6 +1970,11 @@ function startFirestoreSync(uid){
       if(remote && (remote.weightUnit === 'kg' || remote.weightUnit === 'lb')){
         localStorage.setItem(getUnitKey(), remote.weightUnit);
         loadWeightUnit();
+      }
+      if(remote && remote.exerciseNotes && typeof remote.exerciseNotes === 'object'){
+        exerciseNotes = remote.exerciseNotes;
+        try{ localStorage.setItem(getExNotesKey(uid), JSON.stringify(exerciseNotes)); }catch(err){}
+        if(selectedEx) renderDetail();
       }
     }
   }, err => {
@@ -1656,6 +2073,25 @@ function setRestDays(arr){
   localStorage.setItem(getRestDaysKey(), JSON.stringify(arr));
   if(currentUser){
     db.collection('users').doc(currentUser.uid).set({ restDays: arr }, { merge: true }).catch(err => console.error(err));
+  }
+}
+
+/* ---------------- Per-exercise global note ---------------- */
+// A single persistent note per exercise (separate from per-session notes),
+// shown above the progress graphs and editable inline.
+let exerciseNotes = {};
+function getExNotesKey(uid){ return uid ? `ironlog-exnotes-${uid}` : (currentUser ? `ironlog-exnotes-${currentUser.uid}` : 'ironlog-exnotes'); }
+function loadExerciseNotes(uid){
+  try{
+    const raw = localStorage.getItem(getExNotesKey(uid));
+    exerciseNotes = raw ? JSON.parse(raw) : {};
+  }catch(e){ exerciseNotes = {}; }
+}
+function setExerciseNote(name, text){
+  if(text){ exerciseNotes[name] = text; } else { delete exerciseNotes[name]; }
+  try{ localStorage.setItem(getExNotesKey(), JSON.stringify(exerciseNotes)); }catch(e){}
+  if(currentUser){
+    db.collection('users').doc(currentUser.uid).set({ exerciseNotes }, { merge: true }).catch(err => console.error(err));
   }
 }
 function getWorkoutDateSet(){
@@ -1849,10 +2285,9 @@ document.getElementById('photoUpload').addEventListener('change', async (e) => {
     console.error('Photo save failed:', err);
     const match = photos.find(p => p.id === docRef.id);
     if(match){ match._syncError = err && err.code ? err.code : 'unknown'; savePhotosLocalCache(uidAtUpload); renderPhotos(); }
-    const reason = err && err.code === 'permission-denied'
-      ? 'Your account does not have permission to save photos (a Firestore security rules issue) — this needs to be fixed in the Firebase project config, not on this device.'
-      : `Reason: ${err && err.code ? err.code : (err && err.message) || 'unknown error'}.`;
-    alert(`This photo saved on this device but could not sync to your account. ${reason} It stays visible here and will keep retrying — check the "Not synced" tag on it.`);
+    // No blocking alert() here — the "Not synced" tag on the photo itself,
+    // plus the banner on the Log & Progress tab (updatePhotoSyncBanner,
+    // triggered by renderPhotos above), surface this without interrupting.
   });
 });
 
@@ -1865,14 +2300,51 @@ function deletePhoto(id){
   }
 }
 
+function fmtMonthLabel(monthKey){
+  // monthKey is 'YYYY-MM'
+  const dt = new Date(monthKey + '-01T00:00:00');
+  return dt.toLocaleDateString('en-US', {month:'long', year:'numeric'});
+}
+
+function updatePhotoSyncBanner(){
+  const banner = document.getElementById('photoSyncBanner');
+  const text = document.getElementById('photoSyncBannerText');
+  if(!banner || !text) return;
+  const failed = photos.filter(p => p._synced === false);
+  if(failed.length === 0){
+    banner.classList.add('hidden');
+    return;
+  }
+  text.textContent = failed.length === 1
+    ? '1 progress photo saved on this device but hasn\'t synced to your account yet.'
+    : `${failed.length} progress photos saved on this device but haven't synced to your account yet.`;
+  banner.classList.remove('hidden');
+}
+document.getElementById('photoSyncBannerBtn').addEventListener('click', () => {
+  document.querySelector('.main-tab[data-tab="transform"]').click();
+});
+
 function renderPhotos(){
   checkMonthlyPhotoReminder();
+  updatePhotoSyncBanner();
   const grid = document.getElementById('photoGrid');
   if(!photos.length){
     grid.innerHTML = '<div class="empty">No photos yet — add your first one above.</div>';
-  }else{
-    const sortedDesc = [...photos].sort((a,b) => b.date.localeCompare(a.date));
-    grid.innerHTML = sortedDesc.map(p => `
+    return;
+  }
+
+  // Group photos by calendar month, newest month first; newest photo first within a month.
+  const groups = {};
+  photos.forEach(p => {
+    const key = p.date.slice(0, 7); // 'YYYY-MM'
+    (groups[key] = groups[key] || []).push(p);
+  });
+  const monthKeys = Object.keys(groups).sort().reverse();
+  const fullOrderDesc = [...photos].sort((a,b) => b.date.localeCompare(a.date));
+
+  grid.innerHTML = monthKeys.map(key => {
+    const monthPhotos = groups[key].slice().sort((a,b) => b.date.localeCompare(a.date));
+    const tiles = monthPhotos.map(p => `
       <div class="photo-tile" data-id="${p.id}">
         <img src="${p.imageData}" alt="${p.date}" loading="lazy">
         ${p._synced === false ? `<div class="photo-unsynced" title="${p._syncError ? 'Sync failed: ' + p._syncError : 'Only saved on this device so far — will sync when back online'}">Not synced</div>` : ''}
@@ -1880,19 +2352,42 @@ function renderPhotos(){
         <div class="photo-date">${fmtDate(p.date)}</div>
       </div>
     `).join('');
-    grid.querySelectorAll('.photo-del').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showConfirm('Delete photo', 'Remove this progress photo? This cannot be undone.', 'Delete', () => deletePhoto(btn.dataset.id));
-      });
+    return `
+      <div class="photo-month-row" data-month="${key}">
+        <div class="photo-month-label">${fmtMonthLabel(key)} <span class="photo-month-count">${monthPhotos.length}</span></div>
+        <div class="photo-month-scroll-wrap">
+          <button class="photo-scroll-btn photo-scroll-left" data-month="${key}" aria-label="Scroll left">‹</button>
+          <div class="photo-month-track" id="photoTrack-${key}">${tiles}</div>
+          <button class="photo-scroll-btn photo-scroll-right" data-month="${key}" aria-label="Scroll right">›</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  grid.querySelectorAll('.photo-del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showConfirm('Delete photo', 'Remove this progress photo? This cannot be undone.', 'Delete', () => deletePhoto(btn.dataset.id));
     });
-    grid.querySelectorAll('.photo-tile').forEach(tile => {
-      tile.addEventListener('click', () => {
-        const idx = sortedDesc.findIndex(p => p.id === tile.dataset.id);
-        openLightbox(sortedDesc, idx);
-      });
+  });
+  grid.querySelectorAll('.photo-tile').forEach(tile => {
+    tile.addEventListener('click', () => {
+      const idx = fullOrderDesc.findIndex(p => p.id === tile.dataset.id);
+      openLightbox(fullOrderDesc, idx);
     });
-  }
+  });
+  grid.querySelectorAll('.photo-scroll-left').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const track = document.getElementById('photoTrack-' + btn.dataset.month);
+      if(track) track.scrollBy({left: -(track.clientWidth * 0.8), behavior: 'smooth'});
+    });
+  });
+  grid.querySelectorAll('.photo-scroll-right').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const track = document.getElementById('photoTrack-' + btn.dataset.month);
+      if(track) track.scrollBy({left: track.clientWidth * 0.8, behavior: 'smooth'});
+    });
+  });
 }
 
 /* ---------------- Photo lightbox ---------------- */
@@ -1965,72 +2460,12 @@ document.getElementById('photoReminderDismiss').addEventListener('click', () => 
   document.getElementById('photoReminder').classList.add('hidden');
 });
 
-/* ---------------- Live server time + location ---------------- */
-let serverTimeOffsetMs = 0;
-
-async function syncServerTime(){
-  try{
-    const res = await fetch('https://worldtimeapi.org/api/ip');
-    const json = await res.json();
-    serverTimeOffsetMs = new Date(json.datetime).getTime() - Date.now();
-  }catch(err){
-    serverTimeOffsetMs = 0; // offline or blocked — fall back to device clock
-  }
-}
-function tickClock(){
-  const now = new Date(Date.now() + serverTimeOffsetMs);
-  const dateStr = now.toLocaleDateString('en-GB', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
-  const timeStr = now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
-  const el = document.getElementById('statusDateTime');
-  if(el) el.textContent = `🕐 ${dateStr}, ${timeStr}`;
-}
-setInterval(tickClock, 1000);
-tickClock();
-syncServerTime();
-setInterval(syncServerTime, 10 * 60 * 1000); // re-sync with server every 10 min to correct drift
-
-let lastCoords = null;
-let lastGeocodedAt = 0;
-async function reverseGeocode(lat, lon){
-  try{
-    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`);
-    const json = await res.json();
-    const addr = json.address || {};
-    const place = addr.city || addr.town || addr.village || addr.county || addr.state || 'Unknown area';
-    const el = document.getElementById('statusLocation');
-    if(el) el.textContent = `📍 ${place}${addr.country ? ', ' + addr.country : ''}`;
-  }catch(err){
-    const el = document.getElementById('statusLocation');
-    if(el) el.textContent = '📍 Location lookup failed';
-  }
-}
-function handlePosition(pos){
-  const { latitude, longitude } = pos.coords;
-  const now = Date.now();
-  const moved = !lastCoords || Math.abs(lastCoords.lat - latitude) > 0.01 || Math.abs(lastCoords.lon - longitude) > 0.01;
-  if(moved || now - lastGeocodedAt > 5 * 60 * 1000){
-    lastCoords = { lat: latitude, lon: longitude };
-    lastGeocodedAt = now;
-    reverseGeocode(latitude, longitude);
-  }
-}
-function handlePositionError(){
-  const el = document.getElementById('statusLocation');
-  if(el) el.textContent = '📍 Location permission denied';
-}
-if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(handlePosition, handlePositionError, { enableHighAccuracy:false, maximumAge:60000 });
-  navigator.geolocation.watchPosition(handlePosition, handlePositionError, { enableHighAccuracy:false, maximumAge:60000 });
-}else{
-  const el = document.getElementById('statusLocation');
-  if(el) el.textContent = '📍 Geolocation not supported';
-}
-
 auth.onAuthStateChanged(user => {
   currentUser = user;
   if(user){
     authScreen.classList.add('hidden');
     loadWeightUnit();
+    loadExerciseNotes(user.uid);
     loadLocalCache(user.uid);   // instant paint from cache (works offline)
     startFirestoreSync(user.uid); // live sync + cross-device updates
     loadPhotosLocalCache(user.uid);
@@ -2041,6 +2476,7 @@ auth.onAuthStateChanged(user => {
     authScreen.classList.remove('hidden');
     data = {};
     photos = [];
+    exerciseNotes = {};
     refreshSuggestions();
     renderExerciseList();
     renderPhotos();

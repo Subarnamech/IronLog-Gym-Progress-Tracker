@@ -301,6 +301,16 @@
     letter-spacing:1.5px; cursor:pointer; transition:.15s;
   }
   .log-btn:hover{filter:brightness(1.08);}
+  .log-btn.editing{background:var(--iron-green); color:#0d1f16;}
+
+  .edit-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--ember-dim); border:1px solid var(--ember); color:var(--ember);
+    font-size:12.5px; padding:9px 12px; border-radius:6px; margin-bottom:16px;
+  }
+  .edit-banner.hidden{display:none;}
+  .edit-banner b{color:var(--chalk);}
+  .edit-banner .ghost-btn{padding:5px 10px; font-size:11px; flex:none;}
 
   .exercise-list{display:flex; flex-direction:column; gap:10px; margin-bottom:18px;}
   .ex-chip{
@@ -333,6 +343,9 @@
   }
   .history-table td{padding:8px; border-bottom:1px solid var(--table-border); font-family:'JetBrains Mono',monospace;}
   .history-table tr:hover{background:var(--steel-2);}
+  .row-actions{display:flex; gap:4px; white-space:nowrap;}
+  .edit-btn{background:none; border:none; color:var(--chalk-dim); cursor:pointer; font-size:13px;}
+  .edit-btn:hover{color:var(--iron-green);}
   .del-btn{background:none; border:none; color:var(--chalk-dim); cursor:pointer; font-size:14px;}
   .del-btn:hover{color:var(--ember);}
 
@@ -724,6 +737,10 @@
 
     <div class="card">
       <h2>LOG A SET</h2>
+      <div class="edit-banner hidden" id="editBanner">
+        <span>Editing session from <b id="editBannerDate"></b></span>
+        <button class="ghost-btn" id="cancelEditBtn" type="button">Cancel edit</button>
+      </div>
       <label for="splitName">Split</label>
       <input list="splitSuggestions" id="splitName" placeholder="e.g. Push Day">
       <datalist id="splitSuggestions"></datalist>
@@ -743,6 +760,7 @@
           <select class="set-type" data-set="0">
             <option value="normal">Normal set</option>
             <option value="drop">Drop set</option>
+            <option value="bodyweight">Bodyweight</option>
           </select>
           <div class="drop-rows hidden" data-set="0">
             <div class="set-row drop-row">
@@ -771,6 +789,7 @@
           <select class="set-type" data-set="1">
             <option value="normal">Normal set</option>
             <option value="drop">Drop set</option>
+            <option value="bodyweight">Bodyweight</option>
           </select>
           <div class="drop-rows hidden" data-set="1">
             <div class="set-row drop-row">
@@ -799,6 +818,7 @@
           <select class="set-type" data-set="2">
             <option value="normal">Normal set</option>
             <option value="drop">Drop set</option>
+            <option value="bodyweight">Bodyweight</option>
           </select>
           <div class="drop-rows hidden" data-set="2">
             <div class="set-row drop-row">
@@ -1072,6 +1092,7 @@ function applyHistoryState(snapshot){
   data = JSON.parse(snapshot);
   selectedEx = null;
   exitSelectMode(true);
+  exitEditMode(true); // stale entry references from before the undo/redo are no longer valid
   refreshSuggestions();
   renderExerciseList();
   saveData();
@@ -1153,6 +1174,7 @@ document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
       pushHistory();
       names.forEach(n => delete data[n]);
       if(selectedEx && !data[selectedEx]) selectedEx = null;
+      if(editingEntry && names.includes(editingEntry.exercise)) exitEditMode(true);
       exitSelectMode(true);
       refreshSuggestions();
       renderExerciseList();
@@ -1172,6 +1194,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
       pushHistory();
       data = {};
       selectedEx = null;
+      exitEditMode(true);
       exitSelectMode(true);
       refreshSuggestions();
       renderExerciseList();
@@ -1216,7 +1239,7 @@ function autofillFromPreviousSession(){
     const typeSel = document.querySelector(`.set-type[data-set="${i}"]`);
     const wantDrop = s.type === 'drop' && Array.isArray(s.drops) && s.drops.length;
     if(typeSel){
-      typeSel.value = wantDrop ? 'drop' : 'normal';
+      typeSel.value = wantDrop ? 'drop' : (s.type === 'bodyweight' ? 'bodyweight' : 'normal');
       toggleSetType(i);
     }
     if(wantDrop){
@@ -1229,7 +1252,7 @@ function autofillFromPreviousSession(){
     }else{
       const wInp = document.querySelector(`.set-weight[data-set="${i}"]:not(.drop-weight)`);
       const rInp = document.querySelector(`.set-reps[data-set="${i}"]:not(.drop-reps)`);
-      if(wInp) wInp.value = dispW(s.weight);
+      if(wInp) wInp.value = (s.type === 'bodyweight' && s.weight === 0) ? '' : dispW(s.weight);
       if(rInp) rInp.value = s.reps;
     }
   });
@@ -1350,6 +1373,25 @@ function estOneRepMax(weight, reps){
 
 function topSet(entry){
   return entry.sets.reduce((best, s) => s.weight > best.weight ? s : best, entry.sets[0]);
+}
+
+// Formats one logged set for display. Bodyweight sets show as "BW" (or
+// "BW+10kg" if extra weight was added) instead of a bare "0kg", which would
+// otherwise look like a wasted/failed set.
+function fmtSetShort(s){
+  if(s.type === 'drop' && Array.isArray(s.drops) && s.drops.length){
+    return s.drops.map(d => `${dispW(d.weight)}×${d.reps}`).join('→') + ' (drop)';
+  }
+  if(s.type === 'bodyweight'){
+    return s.weight > 0 ? `BW+${dispW(s.weight)}×${s.reps}` : `BW×${s.reps}`;
+  }
+  return `${dispW(s.weight)}×${s.reps}`;
+}
+function fmtSetWithUnit(s){
+  if(s.type === 'bodyweight'){
+    return s.weight > 0 ? `BW+${dispW(s.weight)}${weightUnit}×${s.reps}` : `BW×${s.reps}`;
+  }
+  return `${dispW(s.weight)}${weightUnit}×${s.reps}`;
 }
 
 // Total weight moved in a single set — for a drop set this sums every
@@ -1622,12 +1664,7 @@ function renderDetail(){
     const dataIdx = data[selectedEx].indexOf(e);
     const t = topSet(e);
     const isBest = t.weight === maxWeight;
-    const setsDesc = e.sets.map(s => {
-      if(s.type === 'drop' && Array.isArray(s.drops) && s.drops.length){
-        return s.drops.map(d => `${dispW(d.weight)}×${d.reps}`).join('→') + ' (drop)';
-      }
-      return `${dispW(s.weight)}×${s.reps}`;
-    }).join(' / ');
+    const setsDesc = e.sets.map(s => fmtSetShort(s)).join(' / ');
     const noteCell = notesVisible ? `<td class="notes-col">${e.notes ? escAttr(e.notes) : '<span class="empty-cell">–</span>'}</td>` : '';
     return `<tr data-idx="${dataIdx}">
       <td class="check-col"><input type="checkbox" class="row-cb entry-cb" data-idx="${dataIdx}"></td>
@@ -1636,7 +1673,7 @@ function renderDetail(){
       <td>${setsDesc} ${isBest ? '<span class="best-badge">PR</span>' : ''}</td>
       <td>${dispW(avgVolume(e)).toFixed(1)}${weightUnit}</td>
       ${noteCell}
-      <td><button class="del-btn" data-idx="${dataIdx}" title="Delete entry">✕</button></td>
+      <td class="row-actions"><button class="edit-btn" data-idx="${dataIdx}" title="Edit entry">✎</button><button class="del-btn" data-idx="${dataIdx}" title="Delete entry">✕</button></td>
     </tr>`;
   }).join('');
 
@@ -1723,12 +1760,23 @@ function renderDetail(){
     });
   }
 
+  // single-row edit ✎
+  detailPanel.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx);
+      const entry = data[selectedEx] && data[selectedEx][idx];
+      if(entry) enterEditMode(selectedEx, entry);
+    });
+  });
+
   // single-row delete ✕
   detailPanel.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       pushHistory();
+      const wasEditingThis = editingEntry && data[selectedEx] && data[selectedEx][parseInt(btn.dataset.idx)] === editingEntry.entryRef;
       data[selectedEx].splice(parseInt(btn.dataset.idx), 1);
       if(data[selectedEx].length === 0) delete data[selectedEx];
+      if(wasEditingThis) exitEditMode(true); // the session being edited was just deleted — bail out of edit mode
       renderExerciseList();
       refreshSuggestions();
       saveData();
@@ -1772,8 +1820,11 @@ function renderDetail(){
       'Delete',
       () => {
         pushHistory();
+        const wasEditingOneOfThese = editingEntry && selectedEx === editingEntry.exercise &&
+          [...idxToDelete].some(i => data[selectedEx][i] === editingEntry.entryRef);
         data[selectedEx] = data[selectedEx].filter((_, i) => !idxToDelete.has(i));
         if(data[selectedEx].length === 0) delete data[selectedEx];
+        if(wasEditingOneOfThese) exitEditMode(true);
         refreshSuggestions();
         renderExerciseList();
         saveData();
@@ -1824,6 +1875,22 @@ function resetNoteItems(){
   container.innerHTML = noteItemRowHtml(0);
   wireNoteItemRow(container.firstElementChild);
 }
+// Populates the tick-box note rows from a saved notes string (one line per
+// row, all pre-checked) plus one trailing blank row to continue adding —
+// used when loading a session into the form for editing.
+function loadNoteItems(text){
+  const container = document.getElementById('noteItems');
+  if(!container) return;
+  const lines = (text || '').split('\n').map(l => l.trim()).filter(Boolean);
+  if(!lines.length){ resetNoteItems(); return; }
+  let html = lines.map((line, idx) => `<div class="note-item" data-idx="${idx}">
+    <input type="checkbox" class="note-check" data-idx="${idx}" checked title="Tick to confirm this note and add another">
+    <input type="text" class="note-text" data-idx="${idx}" placeholder="Note ${idx + 1}" value="${escAttr(line)}">
+  </div>`).join('');
+  html += noteItemRowHtml(lines.length);
+  container.innerHTML = html;
+  [...container.children].forEach(row => wireNoteItemRow(row));
+}
 function collectNoteItemsText(){
   const container = document.getElementById('noteItems');
   if(!container) return '';
@@ -1834,16 +1901,99 @@ function collectNoteItemsText(){
 }
 document.querySelectorAll('#noteItems .note-item').forEach(wireNoteItemRow);
 
+/* ---------------- Editing an existing logged session ----------------
+   editingEntry holds a reference to the exact entry object being edited
+   (not just an index), so it stays valid even if the array gets re-sorted
+   or other entries are added/removed while the form is open. */
+let editingEntry = null; // { exercise, entryRef } | null
+
+function enterEditMode(exerciseName, entry){
+  editingEntry = { exercise: exerciseName, entryRef: entry };
+
+  splitInput.value = entry.split || '';
+  exNameInput.value = exerciseName;
+  dateInput.value = entry.date;
+
+  for(let i = 0; i < 3; i++){
+    const typeSel = document.querySelector(`.set-type[data-set="${i}"]`);
+    const s = entry.sets[i];
+    const wInp = document.querySelector(`.set-weight[data-set="${i}"]:not(.drop-weight)`);
+    const rInp = document.querySelector(`.set-reps[data-set="${i}"]:not(.drop-reps)`);
+    if(!s){
+      if(typeSel){ typeSel.value = 'normal'; toggleSetType(i); }
+      if(wInp) wInp.value = '';
+      if(rInp) rInp.value = '';
+      continue;
+    }
+    const wantDrop = s.type === 'drop' && Array.isArray(s.drops) && s.drops.length;
+    if(typeSel){
+      typeSel.value = wantDrop ? 'drop' : (s.type === 'bodyweight' ? 'bodyweight' : 'normal');
+      toggleSetType(i);
+    }
+    if(wantDrop){
+      for(let d = 0; d < 3; d++){
+        const dwInp = document.querySelector(`.drop-weight[data-set="${i}"][data-drop="${d}"]`);
+        const drInp = document.querySelector(`.drop-reps[data-set="${i}"][data-drop="${d}"]`);
+        const dr = s.drops[d];
+        if(dwInp) dwInp.value = dr ? dispW(dr.weight) : '';
+        if(drInp) drInp.value = dr ? dr.reps : '';
+      }
+    }else{
+      if(wInp) wInp.value = (s.type === 'bodyweight' && s.weight === 0) ? '' : dispW(s.weight);
+      if(rInp) rInp.value = s.reps;
+    }
+  }
+  renderPlates();
+  loadNoteItems(entry.notes || '');
+
+  document.getElementById('editBannerDate').textContent = fmtDate(entry.date);
+  document.getElementById('editBanner').classList.remove('hidden');
+  const logBtn = document.getElementById('logBtn');
+  logBtn.textContent = 'UPDATE SET';
+  logBtn.classList.add('editing');
+
+  const formCard = document.querySelector('.grid > .card');
+  if(formCard) formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// clearForm: true when cancelling (wipe the form back to blank), false when
+// called right after a successful save (the normal post-log reset already
+// clears the fields, so this just needs to drop the banner/button state).
+function exitEditMode(clearForm){
+  editingEntry = null;
+  const banner = document.getElementById('editBanner');
+  if(banner) banner.classList.add('hidden');
+  const logBtn = document.getElementById('logBtn');
+  if(logBtn){
+    logBtn.textContent = 'LOG SET';
+    logBtn.classList.remove('editing');
+  }
+  if(clearForm){
+    splitInput.value = '';
+    exNameInput.value = '';
+    dateInput.valueAsDate = new Date();
+    setWeightInputs.forEach(inp => inp.value = '');
+    setRepsInputs.forEach(inp => inp.value = '');
+    resetNoteItems();
+    document.querySelectorAll('.set-type').forEach(sel => { sel.value = 'normal'; toggleSetType(sel.dataset.set); });
+    renderPlates();
+  }
+}
+document.getElementById('cancelEditBtn').addEventListener('click', () => exitEditMode(true));
+
 function toggleSetType(setIdx){
   const select = document.querySelector(`.set-type[data-set="${setIdx}"]`);
   if(!select) return;
-  const isDrop = select.value === 'drop';
+  const mode = select.value; // 'normal' | 'drop' | 'bodyweight'
+  const isDrop = mode === 'drop';
+  const isBodyweight = mode === 'bodyweight';
   const dropBox = document.querySelector(`.drop-rows[data-set="${setIdx}"]`);
   const mainWeight = document.querySelector(`.set-weight[data-set="${setIdx}"]:not(.drop-weight)`);
   const mainReps = document.querySelector(`.set-reps[data-set="${setIdx}"]:not(.drop-reps)`);
   if(dropBox) dropBox.classList.toggle('hidden', !isDrop);
   if(mainWeight) mainWeight.style.display = isDrop ? 'none' : '';
   if(mainReps) mainReps.style.display = isDrop ? 'none' : '';
+  if(mainWeight) mainWeight.placeholder = isBodyweight ? 'Added weight (kg, optional)' : 'Weight (kg)';
   // Clear whichever input set just got hidden so stale values never sneak into a log.
   if(isDrop){
     if(mainWeight) mainWeight.value = '';
@@ -1866,8 +2016,8 @@ document.getElementById('logBtn').addEventListener('click', () => {
   const sets = [];
   for(let i = 0; i < 3; i++){
     const typeSel = document.querySelector(`.set-type[data-set="${i}"]`);
-    const isDrop = typeSel && typeSel.value === 'drop';
-    if(isDrop){
+    const mode = typeSel ? typeSel.value : 'normal';
+    if(mode === 'drop'){
       const drops = [];
       for(let d = 0; d < 3; d++){
         const wInp = document.querySelector(`.drop-weight[data-set="${i}"][data-drop="${d}"]`);
@@ -1879,6 +2029,13 @@ document.getElementById('logBtn').addEventListener('click', () => {
       if(drops.length){
         sets.push({type: 'drop', weight: drops[0].weight, reps: drops[0].reps, drops});
       }
+    }else if(mode === 'bodyweight'){
+      const wInp = document.querySelector(`.set-weight[data-set="${i}"]:not(.drop-weight)`);
+      const rInp = document.querySelector(`.set-reps[data-set="${i}"]:not(.drop-reps)`);
+      const rawW = wInp ? wInp.value.trim() : '';
+      const w = rawW === '' ? 0 : parseFloat(rawW);
+      const r = parseInt(rInp ? rInp.value : NaN);
+      if(!isNaN(r) && !isNaN(w)) sets.push({type: 'bodyweight', weight: toKg(w), reps: r});
     }else{
       const wInp = document.querySelector(`.set-weight[data-set="${i}"]:not(.drop-weight)`);
       const rInp = document.querySelector(`.set-reps[data-set="${i}"]:not(.drop-reps)`);
@@ -1894,6 +2051,18 @@ document.getElementById('logBtn').addEventListener('click', () => {
   }
 
   pushHistory();
+  if(editingEntry){
+    // Editing an existing session: remove it from its original exercise array
+    // (by reference, so this still works even if the array got re-sorted)
+    // before inserting the updated version — this also handles moving a
+    // session to a different exercise if the name was changed.
+    const oldArr = data[editingEntry.exercise];
+    if(oldArr){
+      const oldIdx = oldArr.indexOf(editingEntry.entryRef);
+      if(oldIdx !== -1) oldArr.splice(oldIdx, 1);
+      if(oldArr.length === 0) delete data[editingEntry.exercise];
+    }
+  }
   if(!data[name]) data[name] = [];
   const entry = {date, split, sets};
   if(notes) entry.notes = notes;
@@ -1901,6 +2070,7 @@ document.getElementById('logBtn').addEventListener('click', () => {
   data[name].sort((a,b) => a.date.localeCompare(b.date));
 
   selectedEx = name;
+  exitEditMode(false);
   exNameInput.value = '';
   splitInput.value = '';
   setWeightInputs.forEach(inp => inp.value = '');
@@ -1944,7 +2114,7 @@ document.getElementById('exportCsvBtn').addEventListener('click', () => {
           i + 1,
           s.weight,
           s.reps,
-          isDrop ? 'drop' : 'normal',
+          isDrop ? 'drop' : (s.type === 'bodyweight' ? 'bodyweight' : 'normal'),
           csvEscape(dropsStr),
           csvEscape(entry.notes || '')
         ].join(','));
@@ -2064,7 +2234,7 @@ document.getElementById('importCsvFile').addEventListener('change', (e) => {
             session.sets.push({type: 'normal', weight, reps});
           }
         }else{
-          session.sets.push({type: 'normal', weight, reps});
+          session.sets.push({type: (typeVal === 'bodyweight' ? 'bodyweight' : 'normal'), weight, reps});
         }
         const noteVal = idx.notes !== -1 ? (row[idx.notes] || '').trim() : '';
         if(noteVal && !session.notes) session.notes = noteVal;
@@ -2410,7 +2580,7 @@ function computeAllPRs(){
       const t = topSet(e);
       if(t.weight > runningMax){
         runningMax = t.weight;
-        prs.push({ exercise: name, date: e.date, weight: t.weight, reps: t.reps, split: e.split });
+        prs.push({ exercise: name, date: e.date, weight: t.weight, reps: t.reps, split: e.split, type: t.type });
       }
     });
   });
@@ -2507,7 +2677,7 @@ function dayListHtml(days){
 }
 function prListHtml(prs){
   if(!prs.length) return '<div class="empty">No PRs in this range.</div>';
-  return `<div class="dash-pr-list">` + prs.map(p => `<span class="dash-pr-chip">🏆 ${escAttr(p.exercise)} — ${dispW(p.weight)}${weightUnit}×${p.reps} <span class="dash-pr-date">${fmtDate(p.date)}</span></span>`).join('') + `</div>`;
+  return `<div class="dash-pr-list">` + prs.map(p => `<span class="dash-pr-chip">🏆 ${escAttr(p.exercise)} — ${fmtSetWithUnit(p)} <span class="dash-pr-date">${fmtDate(p.date)}</span></span>`).join('') + `</div>`;
 }
 function monthHeatmapHtml(startISO, endISO){
   const workoutDates = getWorkoutDateSet();
@@ -2553,16 +2723,13 @@ function renderSessionSummary(dateISO){
   }
   const day = summary.days[0];
   const exRows = day.exercises.map(ex => {
-    const setsDesc = ex.sets.map(s => {
-      if(s.type === 'drop' && Array.isArray(s.drops) && s.drops.length) return s.drops.map(d => `${dispW(d.weight)}×${d.reps}`).join('→') + ' (drop)';
-      return `${dispW(s.weight)}×${s.reps}`;
-    }).join(' / ');
+    const setsDesc = ex.sets.map(s => fmtSetShort(s)).join(' / ');
     const globalNote = exerciseNotes[ex.name];
     const noteText = ex.notes ? escAttr(ex.notes) : (globalNote ? '📌 ' + escAttr(globalNote) : '–');
     return `<tr>
       <td>${escAttr(ex.name)}</td>
       <td>${setsDesc}</td>
-      <td>${dispW(ex.topSet.weight)}${weightUnit}×${ex.topSet.reps}</td>
+      <td>${fmtSetWithUnit(ex.topSet)}</td>
       <td>${fmtVol(ex.volume)}</td>
       <td>${noteText}</td>
     </tr>`;

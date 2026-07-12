@@ -48,7 +48,7 @@
     min-height:100vh;
     padding:32px 20px 80px;
   }
-  .wrap{max-width:980px; margin:0 auto;}
+  .wrap{max-width:1240px; margin:0 auto;}
 
   header{
     display:flex; justify-content:space-between; align-items:flex-end;
@@ -64,7 +64,20 @@
   .brand h1 span{color:var(--ember);}
   .brand p{color:var(--chalk-dim); font-size:13px; margin-top:6px; letter-spacing:0.5px;}
 
-  .data-actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .header-right{display:flex; align-items:center;}
+  .settings-wrap{position:relative;}
+  .settings-btn{white-space:nowrap;}
+  .settings-dropdown{
+    position:absolute; top:calc(100% + 8px); right:0; z-index:60;
+    background:var(--steel); border:1px solid var(--hairline); border-radius:10px;
+    padding:10px; box-shadow:0 16px 40px rgba(0,0,0,.35); min-width:200px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .settings-dropdown.hidden{display:none;}
+  .settings-group{display:flex; flex-direction:column; gap:6px;}
+  .settings-group .ghost-btn{width:100%; text-align:left;}
+  .settings-sep{height:1px; background:var(--hairline); margin:2px 0;}
+
   .ghost-btn{
     background:transparent; border:1px solid var(--hairline); color:var(--chalk-dim);
     font-size:12px; padding:8px 12px; border-radius:6px; cursor:pointer;
@@ -116,15 +129,6 @@
   .auth-offline-note{
     text-align:center; color:var(--chalk-dim); font-size:11.5px; margin-top:16px; line-height:1.5;
   }
-  .sync-badge{
-    display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--chalk-dim);
-    border:1px solid var(--hairline); border-radius:6px; padding:7px 10px;
-  }
-  .sync-dot{width:7px; height:7px; border-radius:50%; background:var(--chalk-dim); flex:none;}
-  .sync-dot.online{background:var(--iron-green);}
-  .sync-dot.offline{background:var(--ember);}
-  .sync-dot.syncing{background:var(--ember); animation:pulse 1s infinite;}
-  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.3;}}
 
   /* ---- Tabs ---- */
   .main-tabs{display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid var(--hairline); flex-wrap:wrap;}
@@ -150,12 +154,6 @@
   .streak-card .ghost-btn{flex:none;}
 
   /* ---- How-to tab ---- */
-  .howto-card{max-width:760px;}
-  .howto-card h3{font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; color:var(--ember); margin:22px 0 8px;}
-  .howto-card h3:first-child{margin-top:0;}
-  .howto-card p, .howto-card li{color:var(--chalk-dim); font-size:14px; line-height:1.7;}
-  .howto-card ul{padding-left:20px; margin-top:4px;}
-  .howto-card b{color:var(--chalk);}
 
   /* ---- Transformation tab ---- */
   .transform-controls{
@@ -241,6 +239,7 @@
   .photo-reminder .btn-row{display:flex; gap:8px; flex:none;}
 
   .grid{display:grid; grid-template-columns: var(--log-w, 380px) 10px 1fr; column-gap:14px;}
+  .grid > .card{min-width:0;}
   @media (max-width:780px){ .grid{grid-template-columns:1fr;} }
 
   .grid-resizer{
@@ -353,9 +352,10 @@
   .split-tab.active{background:var(--ember); border-color:var(--ember); color:#1a1208;}
 
   .chart-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  .chart-grid > div{min-width:0;}
   @media (max-width:600px){ .chart-grid{grid-template-columns:1fr;} }
 
-  .chart-resize-box{position:relative; display:inline-block; max-width:100%; padding:0 14px 14px 0;}
+  .chart-resize-box{position:relative; display:inline-block; max-width:100%; min-width:0; padding:0 14px 14px 0;}
   .chart-h-resizer{
     position:absolute; top:0; right:0; bottom:14px; width:14px; cursor:col-resize;
     display:flex; align-items:center; justify-content:center; touch-action:none;
@@ -379,7 +379,7 @@
   .empty-cell{color:var(--chalk-dim);}
 
   .ex-note-box{
-    margin-top:14px; background:var(--steel-2); border:1px solid var(--hairline); border-left:3px solid var(--ember);
+    margin-top:14px; margin-bottom:44px; background:var(--steel-2); border:1px solid var(--hairline); border-left:3px solid var(--ember);
     border-radius:8px; padding:12px 14px;
   }
   .ex-note-label{
@@ -399,7 +399,6 @@
   .ghost-btn:disabled{opacity:0.3; cursor:not-allowed; pointer-events:none;}
   .ghost-btn.danger{color:#e05252; border-color:#e0525240;}
   .ghost-btn.danger:hover{color:#e05252; border-color:#e05252; background:#e0525210;}
-  .header-sep{width:1px; height:22px; background:var(--hairline); flex-shrink:0; align-self:center;}
   .select-bar{display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--steel-2); border:1px solid var(--hairline); border-radius:8px; margin-bottom:12px;}
   .select-bar.hidden{display:none;}
   .select-count{font-size:12px; color:var(--chalk-dim); flex:1; font-family:'JetBrains Mono',monospace;}
@@ -438,12 +437,11 @@
     .brand h1{font-size:34px;}
     .brand p{font-size:11px;}
     header{gap:14px; padding-bottom:16px; margin-bottom:22px;}
-    .data-actions{gap:6px;}
     .ghost-btn{font-size:12px; padding:8px 11px;}
-    .header-sep{display:none;}
+    .settings-dropdown{right:0; left:auto; min-width:180px;}
     .main-tabs{gap:4px;}
     .main-tab{font-size:13px; padding:8px 10px;}
-    .card, .howto-card{padding:16px;}
+    .card{padding:16px;}
     .chart-resize-box{padding:0 0 14px 0;}
     .chart-h-resizer{display:none;} /* dragging to resize doesn't work well with touch scroll; width auto-fits screen instead */
     .history-table{min-width:0; font-size:12px;}
@@ -455,6 +453,123 @@
     .photo-tile{width:120px;}
     .photo-scroll-btn{width:28px; height:28px; font-size:15px;}
     .photo-month-track{gap:10px;}
+  }
+
+  /* ---- Dashboard tab ---- */
+  .dash-card{padding:22px;}
+  .dash-controls-row{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+    margin-bottom:18px; padding-bottom:14px; border-bottom:1px solid var(--hairline);
+  }
+  .dash-subtabs{display:flex; gap:6px; flex-wrap:wrap;}
+  .dash-subtab{
+    background:var(--steel-2); border:1px solid var(--hairline); color:var(--chalk-dim);
+    font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:0.8px;
+    padding:8px 16px; border-radius:6px; cursor:pointer; transition:.15s;
+  }
+  .dash-subtab:hover{border-color:var(--ember); color:var(--chalk);}
+  .dash-subtab.active{background:var(--ember); border-color:var(--ember); color:#1a1208;}
+  .dash-settings{display:flex; align-items:center; gap:8px;}
+  .dash-inline-label{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--chalk-dim);
+    margin:0; display:flex; align-items:center; gap:6px;
+  }
+  .dash-select{width:auto; padding:7px 10px; font-size:12.5px;}
+  .dash-subpanel{display:none;}
+  .dash-subpanel.active{display:block;}
+  .dash-nav-row{display:flex; align-items:center; justify-content:center; gap:14px; margin-bottom:18px; flex-wrap:wrap;}
+  .dash-nav-row #sessionDateInput{width:auto;}
+  .custom-range-row{justify-content:flex-start;}
+  .custom-range-row .dash-inline-label{flex-direction:column; align-items:flex-start; gap:4px;}
+  .custom-range-row input[type=date]{width:auto;}
+  .dash-range-label{
+    font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--chalk); min-width:180px; text-align:center;
+  }
+  .dash-toggle-row{
+    display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--chalk-dim);
+    margin-bottom:14px; cursor:pointer;
+  }
+  .dash-toggle-row input{width:auto; accent-color:var(--ember); cursor:pointer;}
+
+  .dash-stat-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:10px; margin-bottom:22px;}
+  .dash-stat-card{
+    background:var(--steel-2); border:1px solid var(--hairline); border-radius:8px; padding:14px 12px; text-align:center;
+  }
+  .dash-stat-num{font-family:'Bebas Neue',sans-serif; font-size:24px; color:var(--ember); letter-spacing:0.5px; line-height:1.1;}
+  .dash-stat-label{font-size:10.5px; text-transform:uppercase; letter-spacing:0.6px; color:var(--chalk-dim); margin-top:4px;}
+
+  .dash-section-title{
+    font-family:'JetBrains Mono',monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.8px;
+    color:var(--chalk-dim); margin:22px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--hairline);
+  }
+  .dash-section-title:first-of-type{margin-top:0;}
+
+  .dash-bar-list{display:flex; flex-direction:column; gap:9px;}
+  .dash-bar-row{display:grid; grid-template-columns:minmax(120px,240px) 1fr 100px; align-items:center; gap:10px; font-size:12.5px;}
+  .dash-bar-label{color:var(--chalk); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .dash-bar-track{background:var(--steel-2); border-radius:4px; height:10px; overflow:hidden;}
+  .dash-bar-fill{background:var(--ember); height:100%; border-radius:4px; transition:width .2s;}
+  .dash-bar-value{font-family:'JetBrains Mono',monospace; color:var(--chalk-dim); text-align:right;}
+  @media (max-width:520px){ .dash-bar-row{grid-template-columns:80px 1fr 70px; font-size:11.5px;} }
+
+  .dash-day-list{display:flex; flex-direction:column; gap:6px;}
+  .dash-day-row{
+    display:grid; grid-template-columns:70px 1fr auto auto; gap:12px; align-items:center;
+    font-size:12.5px; padding:8px 10px; background:var(--steel-2); border-radius:6px; border:1px solid var(--hairline);
+  }
+  .dash-day-date{font-family:'JetBrains Mono',monospace; color:var(--chalk-dim);}
+  .dash-day-split{color:var(--chalk); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .dash-day-vol{font-family:'JetBrains Mono',monospace; color:var(--ember); text-align:right;}
+  .dash-day-sets{font-family:'JetBrains Mono',monospace; color:var(--chalk-dim); text-align:right; font-size:11.5px;}
+  @media (max-width:520px){ .dash-day-row{grid-template-columns:56px 1fr auto; font-size:11px;} .dash-day-sets{display:none;} }
+
+  .dash-pr-list{display:flex; flex-wrap:wrap; gap:8px;}
+  .dash-pr-chip{
+    background:var(--ember-dim); border:1px solid var(--ember); color:var(--ember); font-size:12px;
+    padding:6px 10px; border-radius:20px; font-family:'JetBrains Mono',monospace;
+  }
+  .dash-pr-date{color:var(--chalk-dim); margin-left:4px;}
+
+  .dash-chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .dash-chip{
+    background:var(--steel-2); border:1px solid var(--hairline); color:var(--chalk); font-size:12.5px;
+    padding:6px 12px; border-radius:20px;
+  }
+  .dash-improved-card{
+    background:var(--steel-2); border:1px solid var(--hairline); border-left:3px solid var(--iron-green);
+    border-radius:8px; padding:12px 14px; font-size:13.5px; color:var(--chalk); line-height:1.5;
+  }
+
+  .dash-heatmap{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:6px;}
+  .dash-heat-dow{font-size:10px; text-align:center; color:var(--chalk-dim); padding-bottom:2px;}
+  .dash-heat-cell{
+    aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:11px;
+    border-radius:5px; background:var(--steel-2); border:1px solid var(--hairline); color:var(--chalk-dim);
+    font-family:'JetBrains Mono',monospace;
+  }
+  .dash-heat-cell.empty{background:transparent; border:none;}
+  .dash-heat-cell.trained{background:var(--ember-dim); border-color:var(--ember); color:var(--ember); font-weight:700;}
+  .dash-heat-cell.rest{background:var(--ember-dim); border-color:var(--iron-green); color:var(--iron-green);}
+  .dash-heat-cell.missed{opacity:.45;}
+  .dash-heat-cell.today{border-width:2px; border-color:var(--chalk);}
+  .dash-heat-legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; font-size:11.5px; color:var(--chalk-dim);}
+  .dash-heat-legend span{display:flex; align-items:center; gap:6px;}
+  .dash-heat-dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
+  .dash-heat-dot.trained{background:var(--ember);}
+  .dash-heat-dot.rest{background:var(--iron-green);}
+  .dash-heat-dot.missed{background:var(--chalk-dim); opacity:.45;}
+
+  .dash-photo-strip{display:flex; gap:12px; overflow-x:auto; padding:8px 2px 10px; -webkit-overflow-scrolling:touch;}
+  .dash-photo-tile{flex:none; width:92px; cursor:zoom-in;}
+  .dash-photo-tile img{width:92px; height:112px; object-fit:cover; border-radius:6px; border:1px solid var(--hairline); display:block;}
+  .dash-photo-date{font-size:10px; color:var(--chalk-dim); text-align:center; margin-top:5px; font-family:'JetBrains Mono',monospace;}
+
+  .dash-session-table td:last-child{max-width:220px; white-space:normal; word-break:break-word;}
+  @media (max-width:640px){
+    .dash-controls-row{flex-direction:column; align-items:stretch;}
+    .dash-subtabs{justify-content:center;}
+    .dash-settings{justify-content:center;}
+    .dash-stat-grid{grid-template-columns:repeat(2, 1fr);}
   }
 
 </style>
@@ -489,23 +604,35 @@
       <h1>IRON<span>LOG</span></h1>
       <p>SETS LOGGED. WEIGHT TRACKED. NO EXCUSES.</p>
     </div>
-    <div class="data-actions">
-      <button class="ghost-btn" id="undoBtn" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
-      <button class="ghost-btn" id="redoBtn" disabled title="Redo (Ctrl+Y)">↪ Redo</button>
-      <div class="header-sep"></div>
-      <button class="ghost-btn" id="exportBtn">Export JSON</button>
-      <button class="ghost-btn" id="exportCsvBtn">Export CSV</button>
-      <button class="ghost-btn" id="importTrigger">Import JSON</button>
-      <button class="ghost-btn" id="importCsvTrigger">Import CSV</button>
-      <div class="header-sep"></div>
-      <button class="ghost-btn danger" id="resetBtn">Reset All</button>
-      <input type="file" id="importFile" accept="application/json">
-      <input type="file" id="importCsvFile" accept=".csv,text/csv">
-      <div class="header-sep"></div>
-      <button class="ghost-btn" id="unitToggleBtn">Units: KG</button>
-      <button class="ghost-btn" id="themeToggleBtn" title="Switch between dark and light mode">🌙 Dark</button>
-      <div class="sync-badge" id="syncBadge"><span class="sync-dot" id="syncDot"></span><span id="syncText">—</span></div>
-      <button class="ghost-btn" id="logoutBtn">Log out</button>
+    <div class="header-right">
+      <div class="settings-wrap">
+        <button class="ghost-btn settings-btn" id="settingsBtn">⚙ Settings ▾</button>
+        <div class="settings-dropdown hidden" id="settingsDropdown">
+          <div class="settings-group">
+            <button class="ghost-btn" id="undoBtn" disabled title="Undo (Ctrl+Z)">↩ Undo</button>
+            <button class="ghost-btn" id="redoBtn" disabled title="Redo (Ctrl+Y)">↪ Redo</button>
+          </div>
+          <div class="settings-sep"></div>
+          <div class="settings-group">
+            <button class="ghost-btn" id="exportBtn">Export JSON</button>
+            <button class="ghost-btn" id="exportCsvBtn">Export CSV</button>
+            <button class="ghost-btn" id="importTrigger">Import JSON</button>
+            <button class="ghost-btn" id="importCsvTrigger">Import CSV</button>
+          </div>
+          <div class="settings-sep"></div>
+          <div class="settings-group">
+            <button class="ghost-btn" id="unitToggleBtn">Units: KG</button>
+            <button class="ghost-btn" id="themeToggleBtn" title="Switch between dark and light mode">🌙 Dark</button>
+          </div>
+          <div class="settings-sep"></div>
+          <div class="settings-group">
+            <button class="ghost-btn danger" id="resetBtn">Reset All</button>
+            <button class="ghost-btn" id="logoutBtn">Log out</button>
+          </div>
+          <input type="file" id="importFile" accept="application/json">
+          <input type="file" id="importCsvFile" accept=".csv,text/csv">
+        </div>
+      </div>
     </div>
   </header>
 
@@ -514,12 +641,71 @@
   </div>
 
   <div class="main-tabs" id="mainTabs">
-    <button class="main-tab active" data-tab="log">LOG & PROGRESS</button>
-    <button class="main-tab" data-tab="howto">HOW TO USE</button>
+    <button class="main-tab active" data-tab="dashboard">DASHBOARD</button>
+    <button class="main-tab" data-tab="log">LOG & PROGRESS</button>
     <button class="main-tab" data-tab="transform">TRANSFORMATION LOG</button>
   </div>
 
-  <div class="tab-panel active" id="tabPanel-log">
+  <div class="tab-panel active" id="tabPanel-dashboard">
+    <div class="card dash-card">
+      <div class="dash-controls-row">
+        <div class="dash-subtabs" id="dashSubtabs">
+          <button class="dash-subtab active" data-dashtab="session">Session</button>
+          <button class="dash-subtab" data-dashtab="weekly">Weekly</button>
+          <button class="dash-subtab" data-dashtab="monthly">Monthly</button>
+          <button class="dash-subtab" data-dashtab="custom">Custom</button>
+        </div>
+        <div class="dash-settings">
+          <label class="dash-inline-label" for="weekStartSelect">Week starts</label>
+          <select id="weekStartSelect" class="dash-select">
+            <option value="1">Monday</option>
+            <option value="0">Sunday</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="dash-subpanel active" id="dashPanel-session">
+        <div class="dash-nav-row">
+          <button class="ghost-btn" id="sessionPrevBtn">‹ Prev</button>
+          <input type="date" id="sessionDateInput">
+          <button class="ghost-btn" id="sessionNextBtn">Next ›</button>
+        </div>
+        <div id="sessionSummaryBody"><div class="empty">Log a set to see your session summary.</div></div>
+      </div>
+
+      <div class="dash-subpanel" id="dashPanel-weekly">
+        <div class="dash-nav-row">
+          <button class="ghost-btn" id="weekPrevBtn">‹ Prev Week</button>
+          <div class="dash-range-label" id="weekRangeLabel"></div>
+          <button class="ghost-btn" id="weekNextBtn">Next Week ›</button>
+        </div>
+        <div id="weeklySummaryBody"></div>
+      </div>
+
+      <div class="dash-subpanel" id="dashPanel-monthly">
+        <div class="dash-nav-row">
+          <button class="ghost-btn" id="monthPrevBtn">‹ Prev Month</button>
+          <div class="dash-range-label" id="monthRangeLabel"></div>
+          <button class="ghost-btn" id="monthNextBtn">Next Month ›</button>
+        </div>
+        <label class="dash-toggle-row">
+          <input type="checkbox" id="monthlyPhotoToggle"> Show transformation photos for this month
+        </label>
+        <div id="monthlySummaryBody"></div>
+      </div>
+
+      <div class="dash-subpanel" id="dashPanel-custom">
+        <div class="dash-nav-row custom-range-row">
+          <label class="dash-inline-label">From <input type="date" id="customStartInput"></label>
+          <label class="dash-inline-label">To <input type="date" id="customEndInput"></label>
+          <button class="ghost-btn" id="customGenerateBtn">Generate</button>
+        </div>
+        <div id="customSummaryBody"><div class="empty">Pick a start and end date, then hit Generate.</div></div>
+      </div>
+    </div>
+  </div><!-- /tabPanel-dashboard -->
+
+  <div class="tab-panel" id="tabPanel-log">
 
   <div class="notice hidden" id="photoSyncBanner">
     <b id="photoSyncBannerText"></b>
@@ -675,39 +861,6 @@
 
   </div><!-- /tabPanel-log -->
 
-  <div class="tab-panel" id="tabPanel-howto">
-    <div class="card howto-card">
-      <h2>HOW TO USE IRON LOG</h2>
-
-      <h3>Account & sync</h3>
-      <p>You need to be logged in to use Iron Log — <b>Log In</b> or <b>Sign Up</b> on the first screen. Everything saves locally on your device first, so it works with no internet, then syncs to your account whenever you're online. Watch the sync badge in the header (next to <b>Log out</b>) — it shows <b>Synced</b>, <b>Syncing…</b>, or <b>Offline — saved locally</b>. Log into the same account on another device to see the same data there.</p>
-
-      <h3>Logging a set</h3>
-      <p>Pick a <b>Split</b> (e.g. Push Day) and <b>Exercise</b>, fill in weight and reps for as many of the three set slots as you did, set the date, and hit <b>LOG SET</b>. Iron Log groups sets by exercise and date automatically.</p>
-
-      <h3>Tracking progress</h3>
-      <p>Click any exercise on the right to see its history, estimated 1-rep max trend, and average volume over time. Use the split tabs above the exercise list to filter by training day. Drag the small handles on the edges of each chart to resize its width or height.</p>
-
-      <h3>Selecting & deleting</h3>
-      <p>Click <b>Select</b> above the exercise list to check off exercises and delete several at once. Inside an exercise's history table, use the row checkboxes the same way to bulk-delete individual sessions.</p>
-
-      <h3>Streak</h3>
-      <p>The streak card counts consecutive days you either logged a workout or marked as a rest day. Click <b>⚙ Rest Days</b> to tell Iron Log which day(s) of the week you rest, so those days don't break your streak.</p>
-
-      <h3>Units</h3>
-      <p>Toggle <b>Units</b> in the header to switch the whole app between kg and lb — your logged numbers convert automatically. Numbers are always stored internally in kg, so switching units never changes your actual data.</p>
-
-      <h3>Undo / Redo</h3>
-      <p><b>Undo</b> and <b>Redo</b> in the header (or Ctrl/Cmd+Z and Ctrl/Cmd+Y) step back and forward through your last several edits — handy if you log or delete something by mistake.</p>
-
-      <h3>Backups & transfers</h3>
-      <p>Use <b>Export JSON</b> for a full backup you can re-import later with <b>Import JSON</b>, or <b>Export CSV</b> to open your sets in a spreadsheet — you can also bring a CSV back in with <b>Import CSV</b> as long as it has exercise, date, split, set, weight, and reps columns. JSON/CSV exports always use kg regardless of your unit toggle, so backups stay consistent. <b>Reset All</b> wipes your logged data — use with care.</p>
-
-      <h3>Transformation log</h3>
-      <p>Switch to the <b>Transformation Log</b> tab to upload progress photos. Set an interval (in days) and Iron Log will pull out one photo closest to each interval mark so you can see change over time, alongside a full gallery of everything you've uploaded.</p>
-    </div>
-  </div>
-
   <div class="tab-panel" id="tabPanel-transform">
     <div class="card">
       <div class="card-header-row">
@@ -856,6 +1009,7 @@ function applyWeightUnitToUI(){
   });
   renderPlates();
   if(Object.keys(data).length) renderExerciseList();
+  refreshDashboardIfVisible();
 }
 document.getElementById('unitToggleBtn').addEventListener('click', () => {
   setWeightUnit(weightUnit === 'kg' ? 'lb' : 'kg');
@@ -1123,6 +1277,7 @@ function bindChartResize(handle, axis, min, max){
     if(!svg) return;
     const pos = axis === 'width' ? e.clientX : e.clientY;
     const newSize = Math.max(min, Math.min(max, startSize + (pos - startPos)));
+    if(axis === 'width') svg.style.maxWidth = 'none';
     svg.style[axis] = newSize + 'px';
   });
   function stopDrag(){
@@ -1239,6 +1394,7 @@ function saveData(){
     try{ localStorage.setItem(getPendingSyncKey(currentUser.uid), String(saveVersion)); }catch(err){}
   }
   syncToFirestore(saveVersion);
+  refreshDashboardIfVisible();
 }
 
 let syncDebounceTimer = null;
@@ -1407,7 +1563,7 @@ function buildLineChart(entries, valueFn, tooltipFn, svgId){
   if(entries.length < 2) return `<div class="empty">Log one more session to see a trend line.</div>`;
 
   return `
-    <svg id="${svgId}" viewBox="0 0 ${w} ${h}" style="width:600px;height:280px;min-width:300px;min-height:150px;">
+    <svg id="${svgId}" viewBox="0 0 ${w} ${h}" style="width:100%;height:280px;min-width:280px;max-width:600px;">
       <defs>
         <linearGradient id="emberFade-${svgId}" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stop-color="#ff6b35" stop-opacity="0.35"/>
@@ -1976,6 +2132,7 @@ function startFirestoreSync(uid){
         try{ localStorage.setItem(getExNotesKey(uid), JSON.stringify(exerciseNotes)); }catch(err){}
         if(selectedEx) renderDetail();
       }
+      refreshDashboardIfVisible();
     }
   }, err => {
     console.error('Sync listener error:', err);
@@ -2051,7 +2208,26 @@ document.querySelectorAll('.main-tab').forEach(btn => {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tabPanel-' + btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab === 'dashboard') renderActiveDashboardSubtab();
   });
+});
+function refreshDashboardIfVisible(){
+  const panel = document.getElementById('tabPanel-dashboard');
+  if(panel && panel.classList.contains('active')) renderActiveDashboardSubtab();
+}
+
+/* ---------------- Settings dropdown ---------------- */
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsDropdown = document.getElementById('settingsDropdown');
+settingsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  settingsDropdown.classList.toggle('hidden');
+});
+settingsDropdown.addEventListener('click', (e) => e.stopPropagation());
+document.addEventListener('click', () => settingsDropdown.classList.add('hidden'));
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape') settingsDropdown.classList.add('hidden'); });
+settingsDropdown.querySelectorAll('button').forEach(b => {
+  b.addEventListener('click', () => settingsDropdown.classList.add('hidden'));
 });
 
 /* ---------------- Streak feature ---------------- */
@@ -2074,6 +2250,7 @@ function setRestDays(arr){
   if(currentUser){
     db.collection('users').doc(currentUser.uid).set({ restDays: arr }, { merge: true }).catch(err => console.error(err));
   }
+  refreshDashboardIfVisible();
 }
 
 /* ---------------- Per-exercise global note ---------------- */
@@ -2093,6 +2270,7 @@ function setExerciseNote(name, text){
   if(currentUser){
     db.collection('users').doc(currentUser.uid).set({ exerciseNotes }, { merge: true }).catch(err => console.error(err));
   }
+  refreshDashboardIfVisible();
 }
 function getWorkoutDateSet(){
   const set = new Set();
@@ -2154,6 +2332,466 @@ document.getElementById('restDaySave').addEventListener('click', () => {
   renderStreak();
   restDayModal.classList.add('hidden');
 });
+
+/* ================= Dashboard tab ================= */
+/* All summaries are computed live from `data` (and `photos` for the monthly
+   tie-in) — nothing new is persisted except the week-start display
+   preference. Every weight/volume figure goes through dispW() so switching
+   Units (KG/LB) instantly updates every number shown here too. */
+
+// ---- Week-start preference (device-level, like theme) ----
+let weekStartDay = 1; // 0 = Sunday, 1 = Monday (default)
+function getWeekStartKey(){ return currentUser ? `ironlog-weekstart-${currentUser.uid}` : 'ironlog-weekstart'; }
+function loadWeekStartDay(){
+  try{
+    const raw = localStorage.getItem(getWeekStartKey());
+    weekStartDay = raw === '0' ? 0 : 1;
+  }catch(e){ weekStartDay = 1; }
+  const sel = document.getElementById('weekStartSelect');
+  if(sel) sel.value = String(weekStartDay);
+}
+function setWeekStartDay(v){
+  weekStartDay = v === 0 ? 0 : 1;
+  try{ localStorage.setItem(getWeekStartKey(), String(weekStartDay)); }catch(e){}
+  refreshDashboardIfVisible();
+}
+document.getElementById('weekStartSelect').addEventListener('change', (e) => {
+  setWeekStartDay(parseInt(e.target.value, 10));
+});
+
+// ---- Small date helpers ----
+function isoDaysBetween(startISO, endISO){
+  const out = [];
+  let d = new Date(startISO + 'T00:00:00');
+  const end = new Date(endISO + 'T00:00:00');
+  while(d <= end){ out.push(toISO(d)); d.setDate(d.getDate() + 1); }
+  return out;
+}
+function fmtVol(kgVol){
+  return `${dispW(kgVol).toLocaleString(undefined, {maximumFractionDigits:1})}${weightUnit}`;
+}
+function fmtPct(pct){
+  if(pct === null) return '–';
+  return (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+}
+
+// ---- Core aggregation: total volume/sets/reps of one logged set ----
+function entryTotalVolume(entry){
+  return entry.sets.reduce((sum, s) => sum + setVolume(s), 0);
+}
+function entryTotalReps(entry){
+  return entry.sets.reduce((sum, s) => {
+    if(s.type === 'drop' && Array.isArray(s.drops) && s.drops.length) return sum + s.drops.reduce((a, d) => a + d.reps, 0);
+    return sum + s.reps;
+  }, 0);
+}
+
+// ---- True PRs: a strictly-higher top-set weight than everything logged
+//      for that exercise before it, computed once across all history ----
+function computeAllPRs(){
+  const prs = [];
+  Object.keys(data).forEach(name => {
+    const entries = data[name].slice().sort((a, b) => a.date.localeCompare(b.date));
+    let runningMax = -Infinity;
+    entries.forEach(e => {
+      const t = topSet(e);
+      if(t.weight > runningMax){
+        runningMax = t.weight;
+        prs.push({ exercise: name, date: e.date, weight: t.weight, reps: t.reps, split: e.split });
+      }
+    });
+  });
+  return prs;
+}
+
+// ---- Build a detailed summary for any [startISO, endISO] inclusive range ----
+function buildRangeSummary(startISO, endISO){
+  const flat = [];
+  Object.keys(data).forEach(name => {
+    data[name].forEach(e => { if(e.date >= startISO && e.date <= endISO) flat.push({ exercise: name, ...e }); });
+  });
+  flat.sort((a, b) => a.date.localeCompare(b.date));
+
+  const bySplitMap = new Map();
+  const byExerciseMap = new Map();
+  const dayMap = new Map();
+  let totalVolume = 0, totalSets = 0, totalReps = 0;
+
+  flat.forEach(e => {
+    const vol = entryTotalVolume(e);
+    const reps = entryTotalReps(e);
+    const sets = e.sets.length;
+    totalVolume += vol; totalSets += sets; totalReps += reps;
+
+    const splitKey = e.split || '(No split)';
+    bySplitMap.set(splitKey, (bySplitMap.get(splitKey) || 0) + vol);
+    byExerciseMap.set(e.exercise, (byExerciseMap.get(e.exercise) || 0) + vol);
+
+    if(!dayMap.has(e.date)) dayMap.set(e.date, { date: e.date, splits: new Set(), volume: 0, sets: 0, reps: 0, exercises: [] });
+    const day = dayMap.get(e.date);
+    if(e.split) day.splits.add(e.split);
+    day.volume += vol; day.sets += sets; day.reps += reps;
+    day.exercises.push({ name: e.exercise, sets: e.sets, notes: e.notes, topSet: topSet(e), volume: vol });
+  });
+
+  const bySplit = [...bySplitMap.entries()].map(([split, volume]) => ({ split, volume })).sort((a, b) => b.volume - a.volume);
+  const byExercise = [...byExerciseMap.entries()].map(([name, volume]) => ({ name, volume })).sort((a, b) => b.volume - a.volume);
+  const days = [...dayMap.values()].map(d => ({ ...d, split: [...d.splits].join(' + ') || '–' })).sort((a, b) => a.date.localeCompare(b.date));
+  const prs = computeAllPRs().filter(p => p.date >= startISO && p.date <= endISO);
+
+  return { startISO, endISO, totalVolume, totalSets, totalReps, sessionDays: days.length, bySplit, byExercise, days, prs };
+}
+
+function newExercisesInRange(startISO, endISO){
+  const out = [];
+  Object.keys(data).forEach(name => {
+    const dates = data[name].map(e => e.date).sort();
+    if(dates.length && dates[0] >= startISO && dates[0] <= endISO) out.push(name);
+  });
+  return out;
+}
+function mostImprovedExercise(startISO, endISO, priorStartISO, priorEndISO){
+  let best = null;
+  Object.keys(data).forEach(name => {
+    const curEntries = data[name].filter(e => e.date >= startISO && e.date <= endISO);
+    const priorEntries = data[name].filter(e => e.date >= priorStartISO && e.date <= priorEndISO);
+    if(!curEntries.length || !priorEntries.length) return;
+    const curMax = Math.max(...curEntries.map(e => topSet(e).weight));
+    const priorMax = Math.max(...priorEntries.map(e => topSet(e).weight));
+    const delta = curMax - priorMax;
+    if(delta > 0 && (!best || delta > best.delta)) best = { name, delta, curMax, priorMax };
+  });
+  return best;
+}
+function allWorkoutDatesSorted(){
+  return [...getWorkoutDateSet()].sort();
+}
+
+// ---- Reusable render fragments ----
+function statCardHtml(label, value){
+  return `<div class="dash-stat-card"><div class="dash-stat-num">${value}</div><div class="dash-stat-label">${escAttr(label)}</div></div>`;
+}
+function barListHtml(items, maxItems){
+  const list = items.slice(0, maxItems || items.length);
+  if(!list.length) return '<div class="empty">No data for this range.</div>';
+  const max = Math.max(...list.map(i => i.volume), 1);
+  return `<div class="dash-bar-list">` + list.map(i => `
+    <div class="dash-bar-row">
+      <div class="dash-bar-label" title="${escAttr(i.label)}">${escAttr(i.label)}</div>
+      <div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.max(4, (i.volume / max * 100))}%"></div></div>
+      <div class="dash-bar-value">${fmtVol(i.volume)}</div>
+    </div>`).join('') + `</div>`;
+}
+function dayListHtml(days){
+  if(!days.length) return '<div class="empty">No sessions in this range.</div>';
+  return `<div class="dash-day-list">` + days.slice().reverse().map(d => `
+    <div class="dash-day-row">
+      <div class="dash-day-date">${fmtDate(d.date)}</div>
+      <div class="dash-day-split" title="${escAttr(d.split)}">${escAttr(d.split)}</div>
+      <div class="dash-day-vol">${fmtVol(d.volume)}</div>
+      <div class="dash-day-sets">${d.sets} sets</div>
+    </div>`).join('') + `</div>`;
+}
+function prListHtml(prs){
+  if(!prs.length) return '<div class="empty">No PRs in this range.</div>';
+  return `<div class="dash-pr-list">` + prs.map(p => `<span class="dash-pr-chip">🏆 ${escAttr(p.exercise)} — ${dispW(p.weight)}${weightUnit}×${p.reps} <span class="dash-pr-date">${fmtDate(p.date)}</span></span>`).join('') + `</div>`;
+}
+function monthHeatmapHtml(startISO, endISO){
+  const workoutDates = getWorkoutDateSet();
+  const restDays = getRestDays();
+  const todayISO = toISO(new Date());
+  const start = new Date(startISO + 'T00:00:00');
+  const leadBlank = (start.getDay() - weekStartDay + 7) % 7;
+  const dayNamesOrdered = [...Array(7)].map((_, i) => DAY_NAMES[(weekStartDay + i) % 7]);
+  let cells = dayNamesOrdered.map(n => `<div class="dash-heat-dow">${n[0]}</div>`).join('');
+  for(let i = 0; i < leadBlank; i++) cells += `<div class="dash-heat-cell empty"></div>`;
+  isoDaysBetween(startISO, endISO).forEach(d => {
+    let cls = 'future';
+    if(workoutDates.has(d)) cls = 'trained';
+    else if(restDays.includes(new Date(d + 'T00:00:00').getDay())) cls = 'rest';
+    else if(d < todayISO) cls = 'missed';
+    else if(d === todayISO) cls = 'today';
+    cells += `<div class="dash-heat-cell ${cls}" title="${fmtDate(d)}">${new Date(d + 'T00:00:00').getDate()}</div>`;
+  });
+  return `<div class="dash-heatmap">${cells}</div>
+    <div class="dash-heat-legend">
+      <span><i class="dash-heat-dot trained"></i> Trained</span>
+      <span><i class="dash-heat-dot rest"></i> Rest day</span>
+      <span><i class="dash-heat-dot missed"></i> Missed</span>
+    </div>`;
+}
+function monthlyPhotoStripHtml(monthKey){
+  const monthPhotos = photos.filter(p => p.date && p.date.slice(0, 7) === monthKey).sort((a, b) => a.date.localeCompare(b.date));
+  if(!monthPhotos.length) return '<div class="empty">No transformation photos logged this month.</div>';
+  return `<div class="dash-photo-strip">` + monthPhotos.map(p => `
+    <div class="dash-photo-tile" data-id="${p.id}">
+      <img src="${p.imageData}" alt="${p.date}" loading="lazy">
+      <div class="dash-photo-date">${fmtDate(p.date)}</div>
+    </div>`).join('') + `</div>`;
+}
+
+// ---- Session summary ----
+function renderSessionSummary(dateISO){
+  const body = document.getElementById('sessionSummaryBody');
+  const summary = buildRangeSummary(dateISO, dateISO);
+  if(summary.days.length === 0){
+    body.innerHTML = '<div class="empty">No sets logged on this date.</div>';
+    return;
+  }
+  const day = summary.days[0];
+  const exRows = day.exercises.map(ex => {
+    const setsDesc = ex.sets.map(s => {
+      if(s.type === 'drop' && Array.isArray(s.drops) && s.drops.length) return s.drops.map(d => `${dispW(d.weight)}×${d.reps}`).join('→') + ' (drop)';
+      return `${dispW(s.weight)}×${s.reps}`;
+    }).join(' / ');
+    const globalNote = exerciseNotes[ex.name];
+    const noteText = ex.notes ? escAttr(ex.notes) : (globalNote ? '📌 ' + escAttr(globalNote) : '–');
+    return `<tr>
+      <td>${escAttr(ex.name)}</td>
+      <td>${setsDesc}</td>
+      <td>${dispW(ex.topSet.weight)}${weightUnit}×${ex.topSet.reps}</td>
+      <td>${fmtVol(ex.volume)}</td>
+      <td>${noteText}</td>
+    </tr>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="dash-stat-grid">
+      ${statCardHtml('Split', escAttr(day.split))}
+      ${statCardHtml('Exercises', day.exercises.length)}
+      ${statCardHtml('Total Sets', day.sets)}
+      ${statCardHtml('Total Reps', day.reps)}
+      ${statCardHtml('Total Volume', fmtVol(day.volume))}
+    </div>
+    ${summary.prs.length ? `<div class="dash-section-title">PRs hit</div>${prListHtml(summary.prs)}` : ''}
+    <div class="dash-section-title">Exercises</div>
+    <div class="table-scroll">
+      <table class="history-table dash-session-table">
+        <thead><tr><th>Exercise</th><th>Sets (wt×reps)</th><th>Top Set</th><th>Volume</th><th>Notes</th></tr></thead>
+        <tbody>${exRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+function sessionStep(dir){
+  const dates = allWorkoutDatesSorted();
+  if(!dates.length) return;
+  const input = document.getElementById('sessionDateInput');
+  const cur = input.value;
+  let target;
+  if(dir < 0){
+    target = [...dates].reverse().find(d => d < cur);
+    if(!target) target = dates[0];
+  }else{
+    target = dates.find(d => d > cur);
+    if(!target) target = dates[dates.length - 1];
+  }
+  input.value = target;
+  renderSessionSummary(target);
+}
+document.getElementById('sessionPrevBtn').addEventListener('click', () => sessionStep(-1));
+document.getElementById('sessionNextBtn').addEventListener('click', () => sessionStep(1));
+document.getElementById('sessionDateInput').addEventListener('change', (e) => renderSessionSummary(e.target.value));
+
+// ---- Weekly summary ----
+let dashWeekAnchorISO = null;
+function startOfWeek(d){
+  const day = d.getDay();
+  const diff = (day - weekStartDay + 7) % 7;
+  const start = new Date(d); start.setHours(0,0,0,0); start.setDate(start.getDate() - diff);
+  return start;
+}
+function currentWeekRange(){
+  const anchor = dashWeekAnchorISO ? new Date(dashWeekAnchorISO + 'T00:00:00') : new Date();
+  const start = startOfWeek(anchor);
+  const end = new Date(start); end.setDate(end.getDate() + 6);
+  return { startISO: toISO(start), endISO: toISO(end) };
+}
+function weekStep(dir){
+  const { startISO } = currentWeekRange();
+  const start = new Date(startISO + 'T00:00:00');
+  start.setDate(start.getDate() + dir * 7);
+  dashWeekAnchorISO = toISO(start);
+  renderWeeklySummary();
+}
+function renderWeeklySummary(){
+  const { startISO, endISO } = currentWeekRange();
+  document.getElementById('weekRangeLabel').textContent = `${fmtDate(startISO)} – ${fmtDate(endISO)}`;
+  const summary = buildRangeSummary(startISO, endISO);
+
+  const priorStart = new Date(startISO + 'T00:00:00'); priorStart.setDate(priorStart.getDate() - 7);
+  const priorEnd = new Date(endISO + 'T00:00:00'); priorEnd.setDate(priorEnd.getDate() - 7);
+  const priorSummary = buildRangeSummary(toISO(priorStart), toISO(priorEnd));
+  const pctChange = priorSummary.totalVolume > 0 ? ((summary.totalVolume - priorSummary.totalVolume) / priorSummary.totalVolume * 100) : null;
+
+  const restDays = getRestDays();
+  const restDayCount = isoDaysBetween(startISO, endISO).filter(d => restDays.includes(new Date(d + 'T00:00:00').getDay())).length;
+
+  document.getElementById('weeklySummaryBody').innerHTML = `
+    <div class="dash-stat-grid">
+      ${statCardHtml('Sessions', summary.sessionDays + ' / 7')}
+      ${statCardHtml('Rest Days', restDayCount)}
+      ${statCardHtml('Total Volume', fmtVol(summary.totalVolume))}
+      ${statCardHtml('Total Sets', summary.totalSets)}
+      ${statCardHtml('Total Reps', summary.totalReps)}
+      ${statCardHtml('vs Last Week', fmtPct(pctChange))}
+    </div>
+    ${summary.prs.length ? `<div class="dash-section-title">PRs this week</div>${prListHtml(summary.prs)}` : ''}
+    <div class="dash-section-title">Volume by Split</div>
+    ${barListHtml(summary.bySplit.map(s => ({ label: s.split, volume: s.volume })))}
+    <div class="dash-section-title">Top Exercises by Volume</div>
+    ${barListHtml(summary.byExercise.map(s => ({ label: s.name, volume: s.volume })), 5)}
+    <div class="dash-section-title">Day by Day</div>
+    ${dayListHtml(summary.days)}
+  `;
+}
+document.getElementById('weekPrevBtn').addEventListener('click', () => weekStep(-1));
+document.getElementById('weekNextBtn').addEventListener('click', () => weekStep(1));
+
+// ---- Monthly summary ----
+let dashMonthAnchorISO = null;
+function currentMonthRange(){
+  const anchor = dashMonthAnchorISO ? new Date(dashMonthAnchorISO + 'T00:00:00') : new Date();
+  const start = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
+  const end = new Date(anchor.getFullYear(), anchor.getMonth() + 1, 0);
+  return { startISO: toISO(start), endISO: toISO(end) };
+}
+function monthStep(dir){
+  const { startISO } = currentMonthRange();
+  const d = new Date(startISO + 'T00:00:00');
+  d.setMonth(d.getMonth() + dir, 1);
+  dashMonthAnchorISO = toISO(d);
+  renderMonthlySummary();
+}
+function renderMonthlySummary(){
+  const { startISO, endISO } = currentMonthRange();
+  const monthDate = new Date(startISO + 'T00:00:00');
+  const monthLabel = monthDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+  document.getElementById('monthRangeLabel').textContent = monthLabel;
+  const summary = buildRangeSummary(startISO, endISO);
+
+  const priorMonthDate = new Date(monthDate); priorMonthDate.setMonth(priorMonthDate.getMonth() - 1);
+  const priorStart = toISO(new Date(priorMonthDate.getFullYear(), priorMonthDate.getMonth(), 1));
+  const priorEnd = toISO(new Date(priorMonthDate.getFullYear(), priorMonthDate.getMonth() + 1, 0));
+  const priorSummary = buildRangeSummary(priorStart, priorEnd);
+  const pctChange = priorSummary.totalVolume > 0 ? ((summary.totalVolume - priorSummary.totalVolume) / priorSummary.totalVolume * 100) : null;
+
+  const restDays = getRestDays();
+  const daysInMonth = isoDaysBetween(startISO, endISO);
+  const restDayCount = daysInMonth.filter(d => restDays.includes(new Date(d + 'T00:00:00').getDay())).length;
+  const trainableDays = daysInMonth.length - restDayCount;
+  const consistency = trainableDays > 0 ? (summary.sessionDays / trainableDays * 100) : 0;
+
+  const newEx = newExercisesInRange(startISO, endISO);
+  const improved = mostImprovedExercise(startISO, endISO, priorStart, priorEnd);
+  const monthKey = startISO.slice(0, 7);
+  const photoToggle = document.getElementById('monthlyPhotoToggle');
+  const showPhotos = photoToggle ? photoToggle.checked : false;
+
+  document.getElementById('monthlySummaryBody').innerHTML = `
+    <div class="dash-stat-grid">
+      ${statCardHtml('Sessions', summary.sessionDays)}
+      ${statCardHtml('Consistency', consistency.toFixed(0) + '%')}
+      ${statCardHtml('Total Volume', fmtVol(summary.totalVolume))}
+      ${statCardHtml('Total Sets', summary.totalSets)}
+      ${statCardHtml('Total Reps', summary.totalReps)}
+      ${statCardHtml('vs Last Month', fmtPct(pctChange))}
+    </div>
+    <div class="dash-section-title">Training Calendar</div>
+    ${monthHeatmapHtml(startISO, endISO)}
+    ${summary.prs.length ? `<div class="dash-section-title">PRs this month</div>${prListHtml(summary.prs)}` : ''}
+    ${improved ? `<div class="dash-section-title">Most Improved</div><div class="dash-improved-card">💪 <b>${escAttr(improved.name)}</b> top set up ${dispW(improved.delta)}${weightUnit} (${dispW(improved.priorMax)}${weightUnit} → ${dispW(improved.curMax)}${weightUnit})</div>` : ''}
+    ${newEx.length ? `<div class="dash-section-title">New Exercises Tried</div><div class="dash-chip-row">${newEx.map(n => `<span class="dash-chip">${escAttr(n)}</span>`).join('')}</div>` : ''}
+    <div class="dash-section-title">Volume by Split</div>
+    ${barListHtml(summary.bySplit.map(s => ({ label: s.split, volume: s.volume })))}
+    <div class="dash-section-title">Top Exercises by Volume</div>
+    ${barListHtml(summary.byExercise.map(s => ({ label: s.name, volume: s.volume })), 5)}
+    <div class="dash-section-title">Day by Day</div>
+    ${dayListHtml(summary.days)}
+    ${showPhotos ? `<div class="dash-section-title">Transformation Photos — ${monthLabel}</div>${monthlyPhotoStripHtml(monthKey)}` : ''}
+  `;
+
+  if(showPhotos){
+    const monthPhotos = photos.filter(p => p.date && p.date.slice(0, 7) === monthKey).sort((a, b) => a.date.localeCompare(b.date));
+    document.querySelectorAll('#monthlySummaryBody .dash-photo-tile').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const idx = monthPhotos.findIndex(p => p.id === tile.dataset.id);
+        openLightbox(monthPhotos, idx);
+      });
+    });
+  }
+}
+document.getElementById('monthPrevBtn').addEventListener('click', () => monthStep(-1));
+document.getElementById('monthNextBtn').addEventListener('click', () => monthStep(1));
+document.getElementById('monthlyPhotoToggle').addEventListener('change', renderMonthlySummary);
+
+// ---- Custom summary ----
+function renderCustomSummary(){
+  const startInputEl = document.getElementById('customStartInput');
+  const endInputEl = document.getElementById('customEndInput');
+  const body = document.getElementById('customSummaryBody');
+  let startISO = startInputEl.value;
+  let endISO = endInputEl.value;
+  if(!startISO || !endISO){
+    body.innerHTML = '<div class="empty">Pick a start and end date, then hit Generate.</div>';
+    return;
+  }
+  if(startISO > endISO){ [startISO, endISO] = [endISO, startISO]; }
+  const summary = buildRangeSummary(startISO, endISO);
+
+  const rangeDays = isoDaysBetween(startISO, endISO).length;
+  const priorEnd = new Date(startISO + 'T00:00:00'); priorEnd.setDate(priorEnd.getDate() - 1);
+  const priorStart = new Date(priorEnd); priorStart.setDate(priorStart.getDate() - (rangeDays - 1));
+  const priorSummary = buildRangeSummary(toISO(priorStart), toISO(priorEnd));
+  const pctChange = priorSummary.totalVolume > 0 ? ((summary.totalVolume - priorSummary.totalVolume) / priorSummary.totalVolume * 100) : null;
+
+  body.innerHTML = `
+    <div class="dash-stat-grid">
+      ${statCardHtml('Sessions', summary.sessionDays)}
+      ${statCardHtml('Days in Range', rangeDays)}
+      ${statCardHtml('Total Volume', fmtVol(summary.totalVolume))}
+      ${statCardHtml('Total Sets', summary.totalSets)}
+      ${statCardHtml('Total Reps', summary.totalReps)}
+      ${statCardHtml('vs Prior Period', fmtPct(pctChange))}
+    </div>
+    ${summary.prs.length ? `<div class="dash-section-title">PRs in range</div>${prListHtml(summary.prs)}` : ''}
+    <div class="dash-section-title">Volume by Split</div>
+    ${barListHtml(summary.bySplit.map(s => ({ label: s.split, volume: s.volume })))}
+    <div class="dash-section-title">Top Exercises by Volume</div>
+    ${barListHtml(summary.byExercise.map(s => ({ label: s.name, volume: s.volume })), 8)}
+    <div class="dash-section-title">Day by Day</div>
+    ${dayListHtml(summary.days)}
+  `;
+}
+document.getElementById('customGenerateBtn').addEventListener('click', renderCustomSummary);
+
+// ---- Subtab switching + master render dispatcher ----
+document.querySelectorAll('.dash-subtab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.dash-subtab').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.dash-subpanel').forEach(p => p.classList.toggle('active', p.id === 'dashPanel-' + btn.dataset.dashtab));
+    renderActiveDashboardSubtab();
+  });
+});
+function renderActiveDashboardSubtab(){
+  const activeBtn = document.querySelector('.dash-subtab.active');
+  const tab = activeBtn ? activeBtn.dataset.dashtab : 'session';
+  if(tab === 'session'){
+    const input = document.getElementById('sessionDateInput');
+    if(!input.value){
+      const dates = allWorkoutDatesSorted();
+      input.value = dates.length ? dates[dates.length - 1] : toISO(new Date());
+    }
+    renderSessionSummary(input.value);
+  }else if(tab === 'weekly'){
+    renderWeeklySummary();
+  }else if(tab === 'monthly'){
+    renderMonthlySummary();
+  }else if(tab === 'custom'){
+    renderCustomSummary();
+  }
+}
+loadWeekStartDay();
 
 /* ---------------- Transformation log ---------------- */
 let photos = [];
@@ -2327,6 +2965,7 @@ document.getElementById('photoSyncBannerBtn').addEventListener('click', () => {
 function renderPhotos(){
   checkMonthlyPhotoReminder();
   updatePhotoSyncBanner();
+  refreshDashboardIfVisible();
   const grid = document.getElementById('photoGrid');
   if(!photos.length){
     grid.innerHTML = '<div class="empty">No photos yet — add your first one above.</div>';
@@ -2471,6 +3110,7 @@ auth.onAuthStateChanged(user => {
     loadPhotosLocalCache(user.uid);
     startPhotosSync(user.uid);
     renderStreak();
+    refreshDashboardIfVisible();
     setSyncStatus(navigator.onLine ? 'online' : 'offline');
   }else{
     authScreen.classList.remove('hidden');

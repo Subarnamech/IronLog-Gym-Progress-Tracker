@@ -2374,27 +2374,41 @@ tabSignup.addEventListener('click', () => setAuthMode('signup'));
 
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 const googleSignInBtn = document.getElementById('googleSignInBtn');
+const googleSignInBtnDefaultHTML = googleSignInBtn.innerHTML;
 googleSignInBtn.addEventListener('click', () => {
   authErr.classList.remove('show');
   googleSignInBtn.disabled = true;
-  // Redirect-based sign-in (full-page navigation to Google and back) instead
-  // of a popup — popups depend on the popup window relaying its result back
-  // to this page via storage/cookies, which some browsers (strict tracking
-  // protection, certain mobile browsers) silently block, leaving you stuck
-  // on the login screen with no error. Redirect avoids that entirely.
-  auth.signInWithRedirect(googleProvider).catch(err => {
+  auth.signInWithPopup(googleProvider).then(result => {
+    // onAuthStateChanged (below, near the bottom of the script) handles
+    // hiding the login screen once Firebase recognizes the signed-in user.
+    if(result && result.user) googleSignInBtn.textContent = 'Signed in — loading…';
+  }).catch(err => {
+    // Log every failure to the console (even ones we don't show the user)
+    // so it can be diagnosed from a screenshot of devtools if this recurs.
+    console.error('Google sign-in failed:', err.code, err.message, err);
+    if(err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment'){
+      // Browser wouldn't allow a popup at all — fall back to a full-page redirect.
+      auth.signInWithRedirect(googleProvider).catch(redirectErr => {
+        console.error('Google redirect fallback also failed:', redirectErr.code, redirectErr.message, redirectErr);
+        authErr.textContent = friendlyAuthError(redirectErr);
+        authErr.classList.add('show');
+        googleSignInBtn.disabled = false;
+      });
+      return;
+    }
     authErr.textContent = friendlyAuthError(err);
     authErr.classList.add('show');
     googleSignInBtn.disabled = false;
   });
 });
-// Picks up the result once Google redirects back to this page after sign-in.
+// Picks up the result if the popup above ever falls back to a redirect.
 auth.getRedirectResult().then(result => {
   if(result && result.user){
     googleSignInBtn.disabled = true;
     googleSignInBtn.textContent = 'Signed in — loading…';
   }
 }).catch(err => {
+  console.error('Google redirect result failed:', err.code, err.message, err);
   if(err.code){
     authErr.textContent = friendlyAuthError(err);
     authErr.classList.add('show');
@@ -3356,6 +3370,8 @@ auth.onAuthStateChanged(user => {
     data = {};
     photos = [];
     exerciseNotes = {};
+    googleSignInBtn.disabled = false;
+    googleSignInBtn.innerHTML = googleSignInBtnDefaultHTML;
     refreshSuggestions();
     renderExerciseList();
     renderPhotos();

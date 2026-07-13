@@ -51,11 +51,14 @@
   .wrap{max-width:1240px; margin:0 auto;}
 
   header{
+    position:relative;
     display:flex; justify-content:space-between; align-items:flex-end;
     border-bottom:1px solid var(--hairline);
     padding-bottom:20px; margin-bottom:32px;
     flex-wrap:wrap; gap:16px;
   }
+  .brand{padding-right:132px; max-width:100%;}
+  .header-right{position:absolute; top:0; right:0; display:flex; align-items:center;}
   .brand h1{
     font-family:'Bebas Neue', sans-serif;
     font-size:48px; letter-spacing:2px; line-height:0.9;
@@ -64,7 +67,6 @@
   .brand h1 span{color:var(--ember);}
   .brand p{color:var(--chalk-dim); font-size:13px; margin-top:6px; letter-spacing:0.5px;}
 
-  .header-right{display:flex; align-items:center;}
   .settings-wrap{position:relative;}
   .settings-btn{white-space:nowrap;}
   .settings-dropdown{

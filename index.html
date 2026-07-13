@@ -2377,25 +2377,24 @@ const googleSignInBtn = document.getElementById('googleSignInBtn');
 googleSignInBtn.addEventListener('click', () => {
   authErr.classList.remove('show');
   googleSignInBtn.disabled = true;
-  auth.signInWithPopup(googleProvider).catch(err => {
-    // Popups can be blocked by some mobile browsers (esp. iOS Safari in
-    // standalone/PWA mode) — fall back to a full-page redirect flow instead.
-    if(err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment'){
-      auth.signInWithRedirect(googleProvider).catch(redirectErr => {
-        authErr.textContent = friendlyAuthError(redirectErr);
-        authErr.classList.add('show');
-      });
-      return;
-    }
-    if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return; // user just closed it — not an error
+  // Redirect-based sign-in (full-page navigation to Google and back) instead
+  // of a popup — popups depend on the popup window relaying its result back
+  // to this page via storage/cookies, which some browsers (strict tracking
+  // protection, certain mobile browsers) silently block, leaving you stuck
+  // on the login screen with no error. Redirect avoids that entirely.
+  auth.signInWithRedirect(googleProvider).catch(err => {
     authErr.textContent = friendlyAuthError(err);
     authErr.classList.add('show');
-  }).finally(() => {
     googleSignInBtn.disabled = false;
   });
 });
-// Catches the result if signInWithPopup fell back to signInWithRedirect above.
-auth.getRedirectResult().catch(err => {
+// Picks up the result once Google redirects back to this page after sign-in.
+auth.getRedirectResult().then(result => {
+  if(result && result.user){
+    googleSignInBtn.disabled = true;
+    googleSignInBtn.textContent = 'Signed in — loading…';
+  }
+}).catch(err => {
   if(err.code){
     authErr.textContent = friendlyAuthError(err);
     authErr.classList.add('show');

@@ -607,17 +607,14 @@
   .dash-heatmap{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:6px;}
   .dash-heat-dow{font-size:11px; text-align:center; color:var(--chalk-dim); padding-bottom:4px; font-weight:600;}
   .dash-heat-cell{
-    aspect-ratio:1; min-height:44px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+    aspect-ratio:1; min-height:52px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
     border-radius:7px; background:var(--steel-2); border:1px solid var(--hairline); color:var(--chalk-dim);
     font-family:'JetBrains Mono',monospace;
   }
-  .dash-heat-daynum{font-size:16px; font-weight:700; line-height:1;}
-  .dash-heat-splitrow{display:flex; gap:3px; align-items:center; justify-content:center; height:14px;}
-  .dash-heat-split-dot{width:9px; height:9px; border-radius:50%; display:inline-block; flex:none;}
-  .dash-heat-split-badge{
-    font-size:11px; line-height:1; display:inline-flex; align-items:center; justify-content:center;
-    width:16px; height:16px; border-radius:50%; flex:none;
-  }
+  .dash-heat-daynum{font-size:15px; font-weight:700; line-height:1;}
+  .dash-heat-splitrow{display:flex; gap:2px; align-items:center; justify-content:center; height:22px;}
+  .dash-body-icon{display:block; flex:none;}
+  .dash-heat-split-dot{width:11px; height:11px; border-radius:50%; display:inline-block; flex:none;}
   .dash-heat-cell.empty{background:transparent; border:none;}
   .dash-heat-cell.trained{background:var(--steel); border-color:var(--hairline); color:var(--chalk); font-weight:700;}
   .dash-heat-cell.rest{background:var(--ember-dim); border-color:var(--iron-green); color:var(--iron-green);}
@@ -628,11 +625,20 @@
   .dash-heat-dot{width:10px; height:10px; border-radius:3px; display:inline-block;}
   .dash-heat-dot.rest{background:var(--iron-green);}
   .dash-heat-dot.missed{background:var(--chalk-dim); opacity:.45;}
-  .dash-heat-split-legend{display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; font-size:11.5px; color:var(--chalk-dim);}
+  .dash-heat-split-legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; font-size:11.5px; color:var(--chalk-dim);}
   .dash-heat-split-legend .dash-heat-legend-item{display:flex; align-items:center; gap:6px;}
+  /* On phones the calendar fills the screen width, which is what makes it
+     readable there. On wider screens that same full-bleed width makes each
+     cell (and the whole grid) unnecessarily huge, so cap it to a compact,
+     centered size instead. */
+  @media (min-width:641px){
+    .dash-heatmap{max-width:460px; margin-left:auto; margin-right:auto;}
+    .dash-heat-legend, .dash-heat-split-legend{max-width:460px; margin-left:auto; margin-right:auto;}
+  }
   @media (max-width:520px){
-    .dash-heat-cell{min-height:36px;}
-    .dash-heat-daynum{font-size:13px;}
+    .dash-heat-cell{min-height:46px;}
+    .dash-heat-daynum{font-size:14px;}
+    .dash-heat-splitrow{height:20px;}
   }
 
   .dash-photo-strip{display:flex; gap:12px; overflow-x:auto; padding:8px 2px 10px; -webkit-overflow-scrolling:touch;}
@@ -2891,26 +2897,56 @@ function prListHtml(prs){
   if(!prs.length) return '<div class="empty">No PRs in this range.</div>';
   return `<div class="dash-pr-list">` + prs.map(p => `<span class="dash-pr-chip">🏆 ${escAttr(p.exercise)} — ${fmtSetWithUnit(p)} <span class="dash-pr-date">${fmtDate(p.date)}</span></span>`).join('') + `</div>`;
 }
-// A consistent color per split name, plus a best-effort muscle-group emoji
-// for common split names — used so the calendar can show a small graphic
-// for what was trained that day instead of writing it out.
+// A consistent color per split name, used both for the fallback dot and to
+// tint whichever custom body-part icon(s) match a split's name.
 const SPLIT_PALETTE = ['#ff6b35','#4cb782','#3b82f6','#e5484d','#a855f7','#eab308','#06b6d4','#f97316','#84cc16','#ec4899'];
 function splitColor(name){
   let hash = 0;
   for(let i = 0; i < name.length; i++){ hash = (hash * 31 + name.charCodeAt(i)) >>> 0; }
   return SPLIT_PALETTE[hash % SPLIT_PALETTE.length];
 }
-function splitEmoji(name){
+
+// Custom hand-drawn body-part icons (not emoji) — simple, bold silhouettes
+// designed to stay legible at small calendar-cell size. Each is a 24x24
+// viewBox path/shape group, filled with whatever color the split gets.
+const BODY_PART_ICONS = {
+  chest:     (c) => `<circle cx="9" cy="12" r="6" fill="${c}"/><circle cx="15" cy="12" r="6" fill="${c}"/>`,
+  back:      (c) => `<path fill="${c}" d="M12 2l8 3.2v5.3c0 6.2-3.5 10.7-8 12.8-4.5-2.1-8-6.6-8-12.8V5.2L12 2z"/><line x1="12" y1="4.3" x2="12" y2="22" stroke="#00000050" stroke-width="1.3"/>`,
+  biceps:    (c) => `<rect x="9" y="12" width="6" height="10" rx="3" fill="${c}"/><circle cx="12" cy="8.5" r="6.5" fill="${c}"/>`,
+  triceps:   (c) => `<rect x="8" y="2" width="8" height="14.5" rx="4" fill="${c}"/><circle cx="12" cy="19" r="4.2" fill="${c}"/>`,
+  shoulders: (c) => `<path fill="${c}" d="M4 14.5a8 8 0 0116 0c0 2.1-1.1 3.7-2.7 4.8L18 22H6l.7-2.7C5.1 18.2 4 16.6 4 14.5z"/>`,
+  legs:      (c) => `<rect x="5.5" y="2" width="5" height="20" rx="2.4" fill="${c}"/><rect x="13.5" y="2" width="5" height="20" rx="2.4" fill="${c}"/>`,
+  glutes:    (c) => `<path fill="${c}" d="M3.5 6.5A2.5 2.5 0 016 4h12a2.5 2.5 0 012.5 2.5V9c0 5.5-3.3 10-8.5 11-5.2-1-8.5-5.5-8.5-11V6.5z"/>`,
+  core:      (c) => `<rect x="8" y="2" width="8" height="20" rx="3.2" fill="${c}"/><g stroke="#ffffff80" stroke-width="1.2"><line x1="8" y1="8.3" x2="16" y2="8.3"/><line x1="8" y1="14.6" x2="16" y2="14.6"/><line x1="12" y1="2" x2="12" y2="22"/></g>`,
+  cardio:    (c) => `<path fill="${c}" d="M12 21S4 16 4 10a5 5 0 019.7-1.7A5 5 0 0122 10c0 6-8 11-8 11z"/><polyline points="6,10.2 9,10.2 10.3,7 12,13 13.3,10.2 18,10.2" fill="none" stroke="#ffffffb0" stroke-width="1.3"/>`,
+  fullbody:  (c) => `<circle cx="12" cy="5" r="3.4" fill="${c}"/><path fill="${c}" d="M6.3 22l1-8.6c.3-2.1 2-3.7 4.1-3.7h1.2c2.1 0 3.8 1.6 4.1 3.7l1 8.6H6.3z"/>`
+};
+// Matches a split's free-text name to zero or more body-part keys, so a
+// name like "Back & Biceps" or "Push Day" returns every matching part —
+// the calendar then draws one icon per matched part (capped for space).
+function splitBodyParts(name){
   const n = (name || '').toLowerCase();
-  if(/leg|quad|hamstring|glute|calv|calf/.test(n)) return '🦵';
-  if(/chest|push/.test(n)) return '🫸';
-  if(/back|pull|lat/.test(n)) return '🫷';
-  if(/bicep|tricep|\barm/.test(n)) return '💪';
-  if(/shoulder|delt/.test(n)) return '🏋️';
-  if(/core|\babs?\b/.test(n)) return '🔥';
-  if(/cardio|run|conditioning/.test(n)) return '🏃';
-  if(/full ?body/.test(n)) return '🧍';
-  return null; // falls back to a plain colored dot
+  const parts = [];
+  const add = (key) => { if(!parts.includes(key)) parts.push(key); };
+  if(/chest|pec/.test(n)) add('chest');
+  if(/\bback\b|lat/.test(n)) add('back');
+  if(/bicep/.test(n)) add('biceps');
+  if(/tricep/.test(n)) add('triceps');
+  if(/shoulder|delt/.test(n)) add('shoulders');
+  if(/leg|quad|hamstring|calv|calf/.test(n)) add('legs');
+  if(/glute|hip/.test(n)) add('glutes');
+  if(/core|\babs?\b/.test(n)) add('core');
+  if(/cardio|\brun\b|conditioning/.test(n)) add('cardio');
+  if(/full ?body/.test(n)) add('fullbody');
+  if(/\bpush\b/.test(n)){ add('chest'); add('shoulders'); add('triceps'); }
+  if(/\bpull\b/.test(n)){ add('back'); add('biceps'); }
+  if(/\barms?\b/.test(n)){ add('biceps'); add('triceps'); }
+  return parts;
+}
+function bodyPartIconHtml(key, color, size){
+  const body = BODY_PART_ICONS[key];
+  if(!body) return '';
+  return `<svg class="dash-body-icon" viewBox="0 0 24 24" width="${size}" height="${size}">${body(color)}</svg>`;
 }
 function getDateSplitsMap(){
   const map = new Map(); // date (ISO) -> Set of split names trained that day
@@ -2921,12 +2957,36 @@ function getDateSplitsMap(){
   }));
   return map;
 }
-function splitGraphicHtml(splitName){
-  const emoji = splitEmoji(splitName);
+// Icons for every split trained on one calendar day, deduped by body part
+// so "Chest" + "Push Day" logged the same day don't repeat the chest icon.
+function daySplitIconsHtml(splitsSet, size){
+  if(!splitsSet || !splitsSet.size) return '';
+  const seen = new Set();
+  const icons = [];
+  [...splitsSet].forEach(s => {
+    const color = splitColor(s);
+    const parts = splitBodyParts(s);
+    if(parts.length){
+      parts.forEach(p => {
+        if(!seen.has(p)){ seen.add(p); icons.push(bodyPartIconHtml(p, color, size)); }
+      });
+    }else{
+      const dotKey = 'dot:' + s;
+      if(!seen.has(dotKey)){
+        seen.add(dotKey);
+        icons.push(`<span class="dash-heat-split-dot" style="background:${color};" title="${escAttr(s)}"></span>`);
+      }
+    }
+  });
+  return icons.slice(0, 2).join('');
+}
+// All icons for one split name, used in the legend (not deduped against
+// other splits, since each split gets its own labeled legend row).
+function splitLegendIconsHtml(splitName){
   const color = splitColor(splitName);
-  return emoji
-    ? `<span class="dash-heat-split-badge" style="background:${color}30;" title="${escAttr(splitName)}">${emoji}</span>`
-    : `<span class="dash-heat-split-dot" style="background:${color};" title="${escAttr(splitName)}"></span>`;
+  const parts = splitBodyParts(splitName);
+  if(parts.length) return parts.slice(0, 3).map(p => bodyPartIconHtml(p, color, 18)).join('');
+  return `<span class="dash-heat-split-dot" style="background:${color};"></span>`;
 }
 
 function monthHeatmapHtml(startISO, endISO){
@@ -2949,20 +3009,17 @@ function monthHeatmapHtml(startISO, endISO){
     else if(d < todayISO) cls = 'missed';
     else if(d === todayISO) cls = 'today';
 
-    let dotsHtml = '';
-    if(splitsForDay && splitsForDay.size){
-      [...splitsForDay].forEach(s => monthSplits.add(s));
-      dotsHtml = [...splitsForDay].slice(0, 3).map(s => splitGraphicHtml(s)).join('');
-    }
+    if(splitsForDay && splitsForDay.size) [...splitsForDay].forEach(s => monthSplits.add(s));
+    const iconsHtml = daySplitIconsHtml(splitsForDay, 20);
     const titleSuffix = splitsForDay && splitsForDay.size ? ` — ${[...splitsForDay].join(', ')}` : '';
     cells += `<div class="dash-heat-cell ${cls}" title="${fmtDate(d)}${escAttr(titleSuffix)}">
       <span class="dash-heat-daynum">${new Date(d + 'T00:00:00').getDate()}</span>
-      <span class="dash-heat-splitrow">${dotsHtml}</span>
+      <span class="dash-heat-splitrow">${iconsHtml}</span>
     </div>`;
   });
 
   const splitLegendHtml = [...monthSplits].map(s =>
-    `<span class="dash-heat-legend-item">${splitGraphicHtml(s)} ${escAttr(s)}</span>`
+    `<span class="dash-heat-legend-item">${splitLegendIconsHtml(s)} ${escAttr(s)}</span>`
   ).join('');
 
   return `<div class="dash-heatmap">${cells}</div>

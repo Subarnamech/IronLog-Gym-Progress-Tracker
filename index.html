@@ -612,7 +612,7 @@
     font-family:'JetBrains Mono',monospace;
   }
   .dash-heat-daynum{font-size:15px; font-weight:700; line-height:1;}
-  .dash-heat-splitrow{display:flex; gap:3px; align-items:flex-end; justify-content:center; min-height:30px;}
+  .dash-heat-splitrow{display:flex; gap:4px; align-items:flex-end; justify-content:center; min-height:52px;}
   .dash-body-icon{display:block; flex:none;}
   .dash-heat-split-dot{width:11px; height:11px; border-radius:50%; display:inline-block; flex:none;}
   .dash-heat-cell.empty{background:transparent; border:none;}
@@ -633,12 +633,13 @@
      centered size instead. Cell height is content-driven either way (no
      forced square aspect), so the tall body-silhouette icons never squash. */
   @media (min-width:641px){
-    .dash-heatmap{max-width:460px; margin-left:auto; margin-right:auto;}
-    .dash-heat-legend, .dash-heat-split-legend{max-width:460px; margin-left:auto; margin-right:auto;}
+    .dash-heatmap{max-width:760px; margin-left:auto; margin-right:auto;}
+    .dash-heat-legend, .dash-heat-split-legend{max-width:760px; margin-left:auto; margin-right:auto;}
   }
   @media (max-width:480px){
     .dash-heat-daynum{font-size:13px;}
-    .dash-heat-splitrow{min-height:26px;}
+    .dash-heat-splitrow{min-height:30px;}
+    .dash-body-icon{width:15px; height:30px;}
   }
 
   .dash-photo-strip{display:flex; gap:12px; overflow-x:auto; padding:8px 2px 10px; -webkit-overflow-scrolling:touch;}
@@ -2909,21 +2910,26 @@ function splitColor(name){
 // Real body-silhouette icons (not emoji, not abstract shapes) — a muted
 // full-body outline with the trained muscle group highlighted in the
 // split's color, the same visual language as a muscle-map diagram.
-const BODY_SILHOUETTE = 'M38 36 L20 40 L15 95 L25 98 L33 55 L33 110 L20 115 L15 195 L30 195 L38 120 L50 118 L62 120 L70 195 L85 195 L80 115 L67 110 L67 55 L75 98 L85 95 L80 40 L62 36 Z';
+const BODY_SILHOUETTE = 'M50 30C58 30 65 33 68 38C72 40 78 42 81 48C84 60 85 78 84 96C83.5 100 76 101 71 99C69 88 67 76 65 65C65 78 65 95 65 112C68 116 71 122 72 130C75 148 76 168 76 188C76 195 68 198 62 197C60 178 58 158 56 138C55 130 53 122 50 118C47 122 45 130 44 138C42 158 40 178 38 197C32 198 24 195 24 188C24 168 25 148 28 130C29 122 32 116 35 112C35 95 35 78 35 65C33 76 31 88 29 99C24 101 16.5 100 16 96C15 78 16 60 19 48C22 42 28 40 32 38C35 33 42 30 50 30Z';
 function bodyBase(){
-  return `<path fill="var(--chalk-dim)" d="${BODY_SILHOUETTE}"/><circle cx="50" cy="18" r="15" fill="var(--chalk-dim)"/>`;
+  return `<path fill="var(--chalk-dim)" d="${BODY_SILHOUETTE}"/><circle cx="50" cy="16" r="14.5" fill="var(--chalk-dim)"/>`;
 }
 const BODY_PART_ICONS = {
-  chest:     (c) => `${bodyBase()}<ellipse cx="42" cy="54" rx="10" ry="9" fill="${c}"/><ellipse cx="58" cy="54" rx="10" ry="9" fill="${c}"/>`,
-  back:      (c) => `${bodyBase()}<path fill="${c}" d="M33 40L67 40L67 108L58 118L42 118L33 108Z"/><line x1="50" y1="42" x2="50" y2="115" stroke="#00000055" stroke-width="2.5"/>`,
-  biceps:    (c) => `${bodyBase()}<ellipse cx="23" cy="55" rx="9" ry="13" fill="${c}"/><ellipse cx="77" cy="55" rx="9" ry="13" fill="${c}"/>`,
-  triceps:   (c) => `${bodyBase()}<ellipse cx="23" cy="68" rx="7.5" ry="25" fill="${c}"/><ellipse cx="77" cy="68" rx="7.5" ry="25" fill="${c}"/>`,
-  shoulders: (c) => `${bodyBase()}<circle cx="23" cy="41" r="11" fill="${c}"/><circle cx="77" cy="41" r="11" fill="${c}"/>`,
-  legs:      (c) => `${bodyBase()}<ellipse cx="35" cy="150" rx="12" ry="32" fill="${c}"/><ellipse cx="65" cy="150" rx="12" ry="32" fill="${c}"/>`,
-  glutes:    (c) => `${bodyBase()}<path fill="${c}" d="M18 112L82 112L79 148L50 158L21 148Z"/>`,
-  core:      (c) => `${bodyBase()}<rect x="38" y="63" width="24" height="44" rx="9" fill="${c}"/>`,
-  cardio:    (c) => `<path fill="${c}" d="M50 108S20 78 20 46a16 16 0 0130-6 16 16 0 0130 6c0 32-30 62-30 62z"/><polyline points="27,50 38,50 42,39 50,62 55,50 73,50" fill="none" stroke="#ffffffcc" stroke-width="3"/>`,
-  fullbody:  (c) => `<path fill="${c}" d="${BODY_SILHOUETTE}"/><circle cx="50" cy="18" r="15" fill="${c}"/>`
+  chest:      (c) => `${bodyBase()}<path fill="${c}" d="M38 45Q50 40 62 45L60 66Q50 72 40 66Z"/>`,
+  back:       (c) => `${bodyBase()}<path fill="${c}" d="M35 38Q50 32 65 38L64 108Q50 118 36 108Z"/><line x1="50" y1="36" x2="50" y2="116" stroke="#00000050" stroke-width="2.2"/>`,
+  lowerback:  (c) => `${bodyBase()}<path fill="${c}" d="M40 85Q50 80 60 85L58 108Q50 114 42 108Z"/>`,
+  traps:      (c) => `${bodyBase()}<path fill="${c}" d="M38 32Q50 26 62 32L58 44Q50 40 42 44Z"/>`,
+  biceps:     (c) => `${bodyBase()}<ellipse cx="20" cy="58" rx="8.5" ry="14" fill="${c}"/><ellipse cx="80" cy="58" rx="8.5" ry="14" fill="${c}"/>`,
+  triceps:    (c) => `${bodyBase()}<ellipse cx="19" cy="70" rx="7" ry="24" fill="${c}"/><ellipse cx="81" cy="70" rx="7" ry="24" fill="${c}"/>`,
+  shoulders:  (c) => `${bodyBase()}<circle cx="21" cy="41" r="11" fill="${c}"/><circle cx="79" cy="41" r="11" fill="${c}"/>`,
+  core:       (c) => `${bodyBase()}<rect x="39" y="68" width="22" height="34" rx="8" fill="${c}"/>`,
+  legs:       (c) => `${bodyBase()}<ellipse cx="34" cy="150" rx="12" ry="34" fill="${c}"/><ellipse cx="66" cy="150" rx="12" ry="34" fill="${c}"/>`,
+  quads:      (c) => `${bodyBase()}<ellipse cx="34" cy="135" rx="12" ry="20" fill="${c}"/><ellipse cx="66" cy="135" rx="12" ry="20" fill="${c}"/>`,
+  hamstrings: (c) => `${bodyBase()}<ellipse cx="34" cy="150" rx="10" ry="26" fill="${c}"/><ellipse cx="66" cy="150" rx="10" ry="26" fill="${c}"/>`,
+  calves:     (c) => `${bodyBase()}<ellipse cx="35" cy="182" rx="8.5" ry="15" fill="${c}"/><ellipse cx="65" cy="182" rx="8.5" ry="15" fill="${c}"/>`,
+  glutes:     (c) => `${bodyBase()}<path fill="${c}" d="M22 112Q50 104 78 112L74 132Q50 140 26 132Z"/>`,
+  cardio:     (c) => `<path fill="${c}" d="M50 100S24 74 24 46a14 14 0 0126-5 14 14 0 0126 5c0 28-26 54-26 54z"/><polyline points="30,49 40,49 43.5,40 50,58 54.5,49 70,49" fill="none" stroke="#ffffffd0" stroke-width="2.8"/>`,
+  fullbody:   (c) => `<path fill="${c}" d="${BODY_SILHOUETTE}"/><circle cx="50" cy="16" r="14.5" fill="${c}"/>`
 };
 // Matches a split's free-text name to zero or more body-part keys, so a
 // name like "Back & Biceps" or "Push Day" returns every matching part —
@@ -2933,11 +2939,16 @@ function splitBodyParts(name){
   const parts = [];
   const add = (key) => { if(!parts.includes(key)) parts.push(key); };
   if(/chest|pec/.test(n)) add('chest');
+  if(/lower.?back/.test(n)) add('lowerback');
   if(/\bback\b|lat/.test(n)) add('back');
+  if(/trap/.test(n)) add('traps');
   if(/bicep/.test(n)) add('biceps');
   if(/tricep/.test(n)) add('triceps');
   if(/shoulder|delt/.test(n)) add('shoulders');
-  if(/leg|quad|hamstring|calv|calf/.test(n)) add('legs');
+  if(/quad/.test(n)) add('quads');
+  if(/hamstring/.test(n)) add('hamstrings');
+  if(/calv|calf/.test(n)) add('calves');
+  if(/\bleg/.test(n)) add('legs');
   if(/glute|hip/.test(n)) add('glutes');
   if(/core|\babs?\b/.test(n)) add('core');
   if(/cardio|\brun\b|conditioning/.test(n)) add('cardio');
@@ -2992,7 +3003,7 @@ function daySplitIconsHtml(splitsSet, width){
 function splitLegendIconsHtml(splitName){
   const color = splitColor(splitName);
   const parts = splitBodyParts(splitName);
-  if(parts.length) return parts.slice(0, 3).map(p => bodyPartIconHtml(p, color, 15)).join('');
+  if(parts.length) return parts.slice(0, 3).map(p => bodyPartIconHtml(p, color, 18)).join('');
   return `<span class="dash-heat-split-dot" style="background:${color};"></span>`;
 }
 
@@ -3017,7 +3028,7 @@ function monthHeatmapHtml(startISO, endISO){
     else if(d === todayISO) cls = 'today';
 
     if(splitsForDay && splitsForDay.size) [...splitsForDay].forEach(s => monthSplits.add(s));
-    const iconsHtml = daySplitIconsHtml(splitsForDay, 15);
+    const iconsHtml = daySplitIconsHtml(splitsForDay, 26);
     const titleSuffix = splitsForDay && splitsForDay.size ? ` — ${[...splitsForDay].join(', ')}` : '';
     cells += `<div class="dash-heat-cell ${cls}" title="${fmtDate(d)}${escAttr(titleSuffix)}">
       <span class="dash-heat-daynum">${new Date(d + 'T00:00:00').getDate()}</span>

@@ -667,6 +667,21 @@
   .dash-photo-date{font-size:10px; color:var(--chalk-dim); text-align:center; margin-top:5px; font-family:'JetBrains Mono',monospace;}
 
   .dash-session-table td:last-child{max-width:220px; white-space:normal; word-break:break-word;}
+
+  /* ---- Transformation Log lock screen ---- */
+  #lockOverlay{z-index:250; background:var(--charcoal);}
+  #confirmModal{z-index:260;}
+  .lock-modal{text-align:center; max-width:340px;}
+  .lock-modal .hidden{display:none !important;}
+  .lock-icon{font-size:34px; margin-bottom:6px;}
+  .lock-modal p{margin-bottom:14px;}
+  .lock-modal input{text-align:center; font-family:'JetBrains Mono',monospace; font-size:22px; letter-spacing:8px; margin-bottom:6px;}
+  .lock-err{min-height:18px; color:#ff9a9a; font-size:12.5px; margin-bottom:12px; line-height:1.4;}
+  .lock-bio-btn{width:100%; margin-bottom:14px;}
+  .lock-modal .modal-btns{justify-content:center;}
+  .lock-submit{background:var(--ember) !important; border-color:var(--ember) !important; color:#181818 !important; font-weight:700;}
+  .lock-modal .auth-forgot-link{display:block; margin:14px auto 0;}
+  .lock-settings-actions{display:flex; flex-direction:column; gap:8px; margin-bottom:16px;}
   @media (max-width:640px){
     .dash-controls-row{flex-direction:column; align-items:stretch;}
     .dash-subtabs{justify-content:center;}
@@ -728,6 +743,7 @@
           <div class="settings-sep"></div>
           <div class="settings-group">
             <button class="ghost-btn" id="howToBtn">📖 How To Use</button>
+            <button class="ghost-btn" id="lockSettingsBtn">🔒 Photo Lock</button>
           </div>
           <div class="settings-sep"></div>
           <div class="settings-group">
@@ -1028,6 +1044,38 @@
   </div>
 </div>
 
+<!-- Transformation Log lock screen -->
+<div class="modal-backdrop hidden" id="lockOverlay">
+  <div class="modal lock-modal">
+    <div class="lock-icon">🔒</div>
+    <h3 id="lockTitle">Transformation Log</h3>
+    <p id="lockMsg"></p>
+    <input type="password" id="lockPinInput" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" placeholder="••••">
+    <div class="lock-err" id="lockErr"></div>
+    <button class="ghost-btn lock-bio-btn hidden" id="lockBioBtn" type="button">👆 Use Face ID / Fingerprint</button>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="lockCancel" type="button">Cancel</button>
+      <button class="modal-confirm lock-submit" id="lockSubmit" type="button">Unlock</button>
+    </div>
+    <button class="auth-forgot-link hidden" id="lockForgot" type="button">Forgot PIN?</button>
+  </div>
+</div>
+
+<!-- Photo lock settings -->
+<div class="modal-backdrop hidden" id="lockSettingsModal">
+  <div class="modal">
+    <h3>Photo Lock</h3>
+    <p id="lockSettingsInfo"></p>
+    <div class="lock-settings-actions">
+      <button class="ghost-btn" id="lockChangePinBtn" type="button">Change PIN</button>
+      <button class="ghost-btn" id="lockBioToggleBtn" type="button">Turn on Face ID / fingerprint</button>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-cancel" id="lockSettingsClose" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- how to use guide -->
 <div class="modal-backdrop hidden" id="howToModal">
   <div class="modal modal-wide">
@@ -1057,6 +1105,9 @@
       <h4>Graphs and how to read them</h4>
       <p><b>Top Set Weight</b> plots your heaviest set each session over time — the clearest view of raw strength progress. <b>Average Volume</b> plots weight × reps averaged across a session's sets — useful for spotting whether you're doing more total work even when the top weight hasn't moved. Drag the small handles on a chart's edges to resize it.</p>
       <p>In the exercise list, each card shows a <span style="color:var(--iron-green)">▲ green</span> badge when your estimated 1-rep max has gone up since your first logged session, or a <span style="color:var(--iron-red)">▼ red</span> badge when it's down. A <b>PR</b> tag on a session means it was your best-ever top set for that exercise up to that point.</p>
+
+      <h4>Photo lock</h4>
+      <p>Opening the <b>Transformation Log</b> (or turning on the photo strip in the Dashboard's Monthly view) asks for a <b>PIN</b>. The first time, you'll create a 4–8 digit PIN. On phones you can also enable <b>Face ID / fingerprint</b>. The PIN is stored on each device separately, so your phone and computer can use different PINs. It re-locks when you leave the tab or after the app has been in the background for a minute. Manage it from <b>Settings → Photo Lock</b>. Forgot your PIN? Tap "Forgot PIN?" — you'll be signed out and can set a new one after logging back in.</p>
 
       <h4>Dashboard</h4>
       <p>The Dashboard tab (your default landing tab) has four views:</p>
@@ -1219,6 +1270,7 @@ document.getElementById('themeToggleBtn').addEventListener('click', () => {
 });
 loadTheme();
 let currentUser = null;
+let photosUnlocked = false; // true only while the Transformation Log lock is open (see lock section near bottom)
 let firestoreUnsub = null;
 let suppressNextSnapshotSave = false; // avoid re-writing data we just received from a snapshot
 let selectedEx = null;
@@ -2602,13 +2654,22 @@ window.addEventListener('online', () => setSyncStatus(currentUser ? 'online' : '
 window.addEventListener('offline', () => setSyncStatus(currentUser ? 'offline' : '—'));
 
 /* ---------------- Tabs ---------------- */
+function activateMainTab(btn){
+  document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tabPanel-' + btn.dataset.tab).classList.add('active');
+  // Leaving the Transformation Log re-locks photos everywhere (incl. the Dashboard photo strip).
+  if(btn.dataset.tab !== 'transform' && photosUnlocked) relockPhotos(false);
+  if(btn.dataset.tab === 'dashboard') renderActiveDashboardSubtab();
+}
 document.querySelectorAll('.main-tab').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.main-tab').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById('tabPanel-' + btn.dataset.tab).classList.add('active');
-    if(btn.dataset.tab === 'dashboard') renderActiveDashboardSubtab();
+    if(btn.dataset.tab === 'transform' && !photosUnlocked){
+      requirePhotoUnlock(() => activateMainTab(btn));
+      return;
+    }
+    activateMainTab(btn);
   });
 });
 function refreshDashboardIfVisible(){
@@ -3229,7 +3290,7 @@ function renderMonthlySummary(){
   const improved = mostImprovedExercise(startISO, endISO, priorStart, priorEnd);
   const monthKey = startISO.slice(0, 7);
   const photoToggle = document.getElementById('monthlyPhotoToggle');
-  const showPhotos = photoToggle ? photoToggle.checked : false;
+  const showPhotos = photoToggle ? (photoToggle.checked && photosUnlocked) : false;
 
   document.getElementById('monthlySummaryBody').innerHTML = `
     <div class="dash-stat-grid">
@@ -3266,7 +3327,7 @@ function renderMonthlySummary(){
 }
 document.getElementById('monthPrevBtn').addEventListener('click', () => monthStep(-1));
 document.getElementById('monthNextBtn').addEventListener('click', () => monthStep(1));
-document.getElementById('monthlyPhotoToggle').addEventListener('change', renderMonthlySummary);
+document.getElementById('monthlyPhotoToggle').addEventListener('change', (e) => onMonthlyPhotoToggle(e));
 
 // ---- Custom summary ----
 function renderCustomSummary(){
@@ -3631,15 +3692,318 @@ function checkMonthlyPhotoReminder(){
   banner.classList.remove('hidden');
 }
 document.getElementById('photoReminderUploadBtn').addEventListener('click', () => {
-  document.querySelector('.main-tab[data-tab="transform"]').click();
-  document.getElementById('photoDate').value = toISO(new Date());
-  document.getElementById('photoUpload').click();
+  requirePhotoUnlock(() => {
+    document.querySelector('.main-tab[data-tab="transform"]').click();
+    document.getElementById('photoDate').value = toISO(new Date());
+    document.getElementById('photoUpload').click();
+  });
 });
 document.getElementById('photoReminderDismiss').addEventListener('click', () => {
   if(currentUser){
     localStorage.setItem(`ironlog-photoreminder-dismissed-${currentUser.uid}`, currentMonthKey());
   }
   document.getElementById('photoReminder').classList.add('hidden');
+});
+
+/* ---------------- Transformation Log lock (PIN + biometrics) ----------------
+   A device-local app lock for progress photos:
+   - Desktop: PIN only. Touch devices with a platform authenticator: PIN or
+     Face ID / fingerprint (WebAuthn, userVerification: required).
+   - The PIN is never stored: only a salted PBKDF2-SHA256 hash, per user, per
+     device (localStorage). Wrong guesses are rate-limited.
+   - Re-locks when leaving the Transformation tab, or after the app has been
+     hidden for LOCK_IDLE_MS.
+   Note: this is a convenience/privacy lock on the device, not server-side
+   security — the photos themselves still sync via your Firebase account. */
+const LOCK_IDLE_MS = 60000;
+const LOCK_KDF_ITER = 120000;
+const lockEnc = new TextEncoder();
+let bioAvail = false;
+let lockCtx = null;
+let lockHiddenAt = 0;
+const $lock = id => document.getElementById(id);
+
+function isTouchDevice(){ return !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches); }
+if(isTouchDevice() && window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable){
+  PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable().then(v => { bioAvail = !!v; }).catch(() => {});
+}
+
+function lockUid(){ return currentUser ? currentUser.uid : 'anon'; }
+function lockCfgKey(){ return `ironlog-lock-${lockUid()}`; }
+function lockFailKey(){ return `ironlog-lockfail-${lockUid()}`; }
+function loadLockCfg(){ try{ return JSON.parse(localStorage.getItem(lockCfgKey()) || 'null'); }catch(e){ return null; } }
+function saveLockCfg(cfg){ try{ localStorage.setItem(lockCfgKey(), JSON.stringify(cfg)); }catch(e){} }
+
+function lockB64(buf){ return btoa(String.fromCharCode(...new Uint8Array(buf))); }
+function lockUnb64(s){ return Uint8Array.from(atob(s), c => c.charCodeAt(0)); }
+
+async function hashPin(pin, saltB64, iter){
+  if(window.crypto && crypto.subtle){
+    const key = await crypto.subtle.importKey('raw', lockEnc.encode(pin), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name:'PBKDF2', hash:'SHA-256', salt: lockUnb64(saltB64), iterations: iter }, key, 256);
+    return lockB64(bits);
+  }
+  // Fallback for contexts without Web Crypto (e.g. plain http): weaker, but the PIN is still never stored in the clear.
+  let h = 5381; const s = saltB64 + pin;
+  for(let r = 0; r < 2000; r++) for(let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+  return 'fb' + h.toString(16);
+}
+
+/* ---- wrong-PIN rate limiting: every 5th failure triggers a growing cooldown ---- */
+function lockFailState(){ try{ return JSON.parse(localStorage.getItem(lockFailKey()) || '{}'); }catch(e){ return {}; } }
+function lockRemainingMs(){ const f = lockFailState(); return f.until && f.until > Date.now() ? f.until - Date.now() : 0; }
+function lockNoteFail(){
+  const f = lockFailState();
+  f.count = (f.count || 0) + 1;
+  if(f.count % 5 === 0){
+    const tier = Math.min(Math.floor(f.count / 5) - 1, 5);
+    f.until = Date.now() + 30000 * Math.pow(2, tier);
+  }
+  try{ localStorage.setItem(lockFailKey(), JSON.stringify(f)); }catch(e){}
+}
+function lockClearFails(){ try{ localStorage.removeItem(lockFailKey()); }catch(e){} }
+
+/* ---- biometrics (WebAuthn platform authenticator) ---- */
+async function registerBiometric(){
+  const cred = await navigator.credentials.create({ publicKey: {
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    rp: { name: 'Iron Log' },
+    user: { id: lockEnc.encode(lockUid()).slice(0, 64), name: (currentUser && currentUser.email) || 'ironlog-user', displayName: 'Iron Log' },
+    pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
+    authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required', residentKey:'discouraged' },
+    timeout: 60000, attestation: 'none'
+  }});
+  return lockB64(cred.rawId);
+}
+async function verifyBiometric(credIdB64){
+  const res = await navigator.credentials.get({ publicKey: {
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    allowCredentials: [{ type:'public-key', id: lockUnb64(credIdB64), transports:['internal'] }],
+    userVerification: 'required', timeout: 60000
+  }});
+  return !!res;
+}
+async function tryBiometricUnlock(auto){
+  const ctx = lockCtx; const cfg = loadLockCfg();
+  if(!ctx || !cfg || !cfg.credId) return;
+  try{
+    const ok = await verifyBiometric(cfg.credId);
+    if(lockCtx !== ctx) return;
+    if(ok){ lockClearFails(); finishLock(true); }
+  }catch(e){
+    if(lockCtx !== ctx) return;
+    $lock('lockErr').textContent = auto ? '' : 'Biometric check cancelled — enter your PIN instead.';
+    const i = $lock('lockPinInput'); if(i && !isTouchDevice()) i.focus();
+  }
+}
+
+/* ---- lock screen state machine ---- */
+function promptLock(opts){
+  const cfg = loadLockCfg();
+  lockCtx = {
+    mode: (opts.forceSetup || !cfg || !cfg.hash) ? 'setup' : 'unlock',
+    step: 'new', firstPin: '',
+    grant: !!opts.grant, onSuccess: opts.onSuccess, onCancel: opts.onCancel
+  };
+  $lock('lockOverlay').classList.remove('hidden');
+  renderLock();
+  // Called synchronously from the user's tap so iOS/Android allow the biometric prompt.
+  if(lockCtx.mode === 'unlock' && cfg && cfg.credId && bioAvail) tryBiometricUnlock(true);
+}
+function closeLockOverlay(){
+  const o = $lock('lockOverlay'); if(o) o.classList.add('hidden');
+  const i = $lock('lockPinInput'); if(i) i.value = '';
+  lockCtx = null;
+}
+function finishLock(ok){
+  const ctx = lockCtx;
+  closeLockOverlay();
+  if(!ctx || !ok) return;
+  if(ctx.grant){ photosUnlocked = true; }
+  if(ctx.onSuccess) ctx.onSuccess();
+}
+function cancelLock(){
+  if(!lockCtx) return;
+  const ctx = lockCtx;
+  if(ctx.mode === 'setup' && ctx.step === 'bio-offer'){ finishLock(true); return; } // PIN already saved; just skip biometrics
+  closeLockOverlay();
+  if(ctx.onCancel) ctx.onCancel();
+}
+function renderLock(){
+  if(!lockCtx) return;
+  const cfg = loadLockCfg();
+  const inp = $lock('lockPinInput'), err = $lock('lockErr'), cancel = $lock('lockCancel');
+  const forgot = $lock('lockForgot'), bio = $lock('lockBioBtn');
+  err.textContent = ''; inp.value = '';
+  inp.classList.remove('hidden'); forgot.classList.add('hidden'); bio.classList.add('hidden');
+  cancel.textContent = 'Cancel';
+  let title, msg, btn;
+  if(lockCtx.mode === 'unlock'){
+    title = 'Transformation Log'; msg = 'Locked. Enter your PIN to continue.'; btn = 'Unlock';
+    forgot.classList.remove('hidden');
+    if(cfg && cfg.credId && bioAvail) bio.classList.remove('hidden');
+    const wait = lockRemainingMs();
+    if(wait > 0) err.textContent = `Too many attempts. Try again in ${Math.ceil(wait / 1000)}s.`;
+  }else if(lockCtx.step === 'new'){
+    title = 'Create a PIN'; msg = 'Choose a 4–8 digit PIN. It protects your progress photos on this device.'; btn = 'Continue';
+  }else if(lockCtx.step === 'confirm'){
+    title = 'Confirm PIN'; msg = 'Enter the same PIN once more.'; btn = 'Save PIN';
+  }else{ // bio-offer
+    title = 'Faster unlock'; msg = 'Use Face ID / fingerprint instead of typing your PIN on this device?';
+    btn = 'Enable'; cancel.textContent = 'Not now'; inp.classList.add('hidden');
+  }
+  $lock('lockTitle').textContent = title;
+  $lock('lockMsg').textContent = msg;
+  $lock('lockSubmit').textContent = btn;
+  if(!inp.classList.contains('hidden') && !(isTouchDevice() && !bio.classList.contains('hidden'))){
+    setTimeout(() => inp.focus(), 50);
+  }
+}
+async function submitLock(){
+  if(!lockCtx) return;
+  const ctx = lockCtx;
+  const inp = $lock('lockPinInput'), err = $lock('lockErr');
+  err.textContent = '';
+
+  if(ctx.mode === 'unlock'){
+    const wait = lockRemainingMs();
+    if(wait > 0){ err.textContent = `Too many attempts. Try again in ${Math.ceil(wait / 1000)}s.`; return; }
+    const pin = inp.value;
+    if(!/^\d{4,8}$/.test(pin)){ err.textContent = 'Enter your 4–8 digit PIN.'; return; }
+    const cfg = loadLockCfg();
+    const h = await hashPin(pin, cfg.salt, cfg.iter);
+    if(lockCtx !== ctx) return;
+    if(h === cfg.hash){ lockClearFails(); finishLock(true); return; }
+    lockNoteFail();
+    const w2 = lockRemainingMs();
+    err.textContent = w2 > 0 ? `Too many attempts. Try again in ${Math.ceil(w2 / 1000)}s.` : 'Wrong PIN.';
+    inp.value = ''; inp.focus();
+    return;
+  }
+
+  if(ctx.step === 'new'){
+    const pin = inp.value;
+    if(!/^\d{4,8}$/.test(pin)){ err.textContent = 'PIN must be 4–8 digits.'; return; }
+    ctx.firstPin = pin; ctx.step = 'confirm'; renderLock();
+    return;
+  }
+  if(ctx.step === 'confirm'){
+    const pin = inp.value;
+    if(pin !== ctx.firstPin){
+      ctx.step = 'new'; ctx.firstPin = ''; renderLock();
+      $lock('lockErr').textContent = "PINs didn't match — start again.";
+      return;
+    }
+    const old = loadLockCfg();
+    const salt = lockB64(crypto.getRandomValues(new Uint8Array(16)));
+    const hash = await hashPin(pin, salt, LOCK_KDF_ITER);
+    if(lockCtx !== ctx) return;
+    const cfg = { salt, iter: LOCK_KDF_ITER, hash, credId: (old && old.credId) || null };
+    saveLockCfg(cfg); lockClearFails();
+    if(bioAvail && !cfg.credId){ ctx.step = 'bio-offer'; renderLock(); }
+    else finishLock(true);
+    return;
+  }
+  if(ctx.step === 'bio-offer'){
+    try{
+      const id = await registerBiometric();
+      const cfg = loadLockCfg(); cfg.credId = id; saveLockCfg(cfg);
+      finishLock(true);
+    }catch(e){
+      if(lockCtx !== ctx) return;
+      err.textContent = "Couldn't set that up on this device. You can still use your PIN.";
+      $lock('lockCancel').textContent = 'Continue';
+    }
+  }
+}
+$lock('lockSubmit').addEventListener('click', submitLock);
+$lock('lockCancel').addEventListener('click', cancelLock);
+$lock('lockBioBtn').addEventListener('click', () => tryBiometricUnlock(false));
+$lock('lockPinInput').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8); });
+$lock('lockPinInput').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); submitLock(); }
+  else if(e.key === 'Escape'){ cancelLock(); }
+});
+$lock('lockForgot').addEventListener('click', () => {
+  showConfirm(
+    'Reset PIN',
+    'To reset your PIN you will be signed out. After logging back in you can create a new PIN. Your workout data and photos stay safe in your account.',
+    'Sign out',
+    () => {
+      try{ localStorage.removeItem(lockCfgKey()); }catch(e){}
+      lockClearFails();
+      closeLockOverlay();
+      photosUnlocked = false;
+      $lock('logoutBtn').click();
+    }
+  );
+});
+
+/* ---- gating helpers ---- */
+function requirePhotoUnlock(onOk, onCancel){
+  if(photosUnlocked){ onOk(); return; }
+  promptLock({ grant: true, onSuccess: onOk, onCancel });
+}
+function relockPhotos(promptIfOnTransform){
+  const was = photosUnlocked;
+  photosUnlocked = false;
+  const tog = $lock('monthlyPhotoToggle'); if(tog) tog.checked = false;
+  if(typeof closeLightbox === 'function') closeLightbox();
+  if(was) refreshDashboardIfVisible();
+  const onTransform = $lock('tabPanel-transform').classList.contains('active');
+  if(was && promptIfOnTransform && onTransform && !lockCtx){
+    promptLock({
+      grant: true,
+      onSuccess: () => {},
+      onCancel: () => document.querySelector('.main-tab[data-tab="dashboard"]').click()
+    });
+  }
+}
+function onMonthlyPhotoToggle(e){
+  const cb = e.target;
+  if(cb.checked && !photosUnlocked){
+    cb.checked = false;
+    requirePhotoUnlock(() => { cb.checked = true; renderMonthlySummary(); });
+    return;
+  }
+  renderMonthlySummary();
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden'){ lockHiddenAt = Date.now(); return; }
+  const away = lockHiddenAt ? Date.now() - lockHiddenAt : 0;
+  lockHiddenAt = 0;
+  if(photosUnlocked && away > LOCK_IDLE_MS) relockPhotos(true);
+});
+
+/* ---- Settings → Photo Lock ---- */
+function openLockSettings(){
+  const cfg = loadLockCfg();
+  const bioBtn = $lock('lockBioToggleBtn');
+  $lock('lockSettingsInfo').textContent = (cfg && cfg.hash)
+    ? 'A PIN protects the Transformation Log on this device.' + (cfg.credId ? ' Face ID / fingerprint is on.' : '')
+    : 'No PIN set yet.';
+  if(bioAvail && cfg && cfg.hash){
+    bioBtn.style.display = '';
+    bioBtn.textContent = cfg.credId ? 'Turn off Face ID / fingerprint' : 'Turn on Face ID / fingerprint';
+  }else{
+    bioBtn.style.display = 'none';
+  }
+  $lock('lockSettingsModal').classList.remove('hidden');
+}
+function closeLockSettings(){ $lock('lockSettingsModal').classList.add('hidden'); }
+$lock('lockSettingsBtn').addEventListener('click', () => promptLock({ grant: false, onSuccess: openLockSettings }));
+$lock('lockSettingsClose').addEventListener('click', closeLockSettings);
+$lock('lockSettingsModal').addEventListener('click', e => { if(e.target === $lock('lockSettingsModal')) closeLockSettings(); });
+$lock('lockChangePinBtn').addEventListener('click', () => {
+  closeLockSettings();
+  promptLock({ forceSetup: true, grant: false, onSuccess: openLockSettings, onCancel: openLockSettings });
+});
+$lock('lockBioToggleBtn').addEventListener('click', async () => {
+  const cfg = loadLockCfg(); if(!cfg) return;
+  if(cfg.credId){ cfg.credId = null; saveLockCfg(cfg); openLockSettings(); return; }
+  try{ cfg.credId = await registerBiometric(); saveLockCfg(cfg); }
+  catch(e){ alert("Couldn't turn on Face ID / fingerprint on this device."); }
+  openLockSettings();
 });
 
 auth.onAuthStateChanged(user => {
@@ -3663,6 +4027,8 @@ auth.onAuthStateChanged(user => {
     exerciseNotes = {};
     googleSignInBtn.disabled = false;
     googleSignInBtn.innerHTML = googleSignInBtnDefaultHTML;
+    photosUnlocked = false;
+    closeLockOverlay();
     refreshSuggestions();
     renderExerciseList();
     renderPhotos();

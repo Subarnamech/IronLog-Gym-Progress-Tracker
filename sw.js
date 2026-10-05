@@ -1,6 +1,6 @@
 /* Iron Log service worker.
    Bump CACHE_VERSION every time you change index.html so users get the update. */
-const CACHE_VERSION = 'ironlog-v1';
+const CACHE_VERSION = 'ironlog-v2';
 const SHELL = [
   '/',
   '/index.html',

@@ -32,24 +32,23 @@ MANIFEST = """{
   "name": "__NAME__",
   "short_name": "__SHORT__",
   "description": "__DESC__",
-  "id": "/__SLUG__/",
-  "start_url": "/__SLUG__/?source=pwa",
-  "scope": "/__SLUG__/",
+  "start_url": "./?source=pwa",
+  "scope": "./",
   "display": "standalone",
   "background_color": "__COLOR__",
   "theme_color": "__COLOR__",
   "icons": [
-    { "src": "/__SLUG__/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/__SLUG__/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/__SLUG__/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
 """
 
-SW = """/* __NAME__ service worker: scope /__SLUG__/ only.
+SW = """/* __NAME__ service worker: scope is this tool's folder only (paths are relative to wherever it is hosted).
    Bump CACHE_VERSION every time you change this tool's files so installed copies update. */
 const CACHE_VERSION = '__SLUG__-v1';
-const BASE = '/__SLUG__/';
+const BASE = new URL(self.registration.scope).pathname; // e.g. "/__SLUG__/" or "/repo/__SLUG__/"
 const SHELL = [
   BASE,
   BASE + 'index.html',
@@ -144,7 +143,7 @@ INDEX = """<!DOCTYPE html>
 </head>
 <body>
 <main>
-  <a id="back" href="/">Back to OmniPorta</a>
+  <a id="back" href="../">Back to OmniPorta</a>
   <h1>__NAME__</h1>
   <p>__DESC__</p>
   <!-- Build your tool here. -->

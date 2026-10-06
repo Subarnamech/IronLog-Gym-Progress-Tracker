@@ -7,15 +7,15 @@
 <meta name="description" content="One place to open all your tools.">
 
 <!-- PWA: the OmniPorta hub app (every tool). Each tool has its own separate manifest. -->
-<link rel="manifest" href="/manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="OmniPorta">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
 <!-- Apply the saved theme before first paint to avoid a flash -->
 <script>
@@ -225,7 +225,7 @@
 
 <header class="site-header">
   <div class="container">
-    <a class="brand" href="/" aria-label="OmniPorta home">
+    <a class="brand" href="./" aria-label="OmniPorta home">
       <span class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-linecap="round">
           <path d="M81.95 38.37 A34 34 0 1 1 61.63 18.05" stroke-width="9"/>
@@ -303,7 +303,7 @@
   <div class="actions"><button class="btn btn-primary btn-sm" id="iosClose" type="button">Got it</button></div>
 </dialog>
 
-<script src="/tools.js"></script>
+<script src="tools.js"></script>
 <script>
 (function () {
   var TOOLS = window.OMNIPORTA_TOOLS || [];
@@ -320,10 +320,11 @@
   }
 
   function cardHTML(t) {
-    var href = '/' + encodeURIComponent(t.slug) + '/';
+    // Relative links, so the hub works at a domain root or under a sub-path like /repo/
+    var href = encodeURIComponent(t.slug) + '/';
     return '<article class="card">' +
       '<div class="card-top">' +
-        '<img class="tool-icon" src="/' + encodeURIComponent(t.slug) + '/icons/icon-192.png" alt="" width="44" height="44" loading="lazy">' +
+        '<img class="tool-icon" src="' + encodeURIComponent(t.slug) + '/icons/icon-192.png" alt="" width="44" height="44" loading="lazy">' +
         (t.category ? '<span class="badge">' + esc(t.category) + '</span>' : '') +
       '</div>' +
       '<div><h2>' + esc(t.name) + '</h2><p>' + esc(t.description || '') + '</p></div>' +
@@ -392,7 +393,7 @@
   /* service worker (https:// or localhost only) */
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function (err) {
         console.warn('Service worker registration failed:', err);
       });
     });

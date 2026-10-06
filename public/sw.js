@@ -1,23 +1,20 @@
-/* OmniPorta hub service worker — scope: /
-   Tools (e.g. /ironlog/) register their own, more specific service workers, which take over
+/* OmniPorta hub service worker.
+   Its scope is wherever the hub is hosted ("/" on a domain root, "/repo/" on a GitHub project site).
+   Tools (e.g. ironlog/) register their own, more specific service workers, which take over
    inside their folders. This worker deliberately ignores everything under a tool's folder.
    Bump CACHE_VERSION whenever you change the hub files. */
 const CACHE_VERSION = 'omniporta-v1';
-const SHELL = [
-  '/',
-  '/index.html',
-  '/tools.js',
-  '/manifest.webmanifest',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/apple-touch-icon.png'
-];
+const SCOPE = new URL(self.registration.scope).pathname; // e.g. "/" or "/repo/"
+const SHELL = ['', 'index.html', 'tools.js', 'manifest.webmanifest',
+  'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'].map((p) => SCOPE + p);
 const CDN_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
-// Hub-owned paths only: the root page, its data file, and icon folders ("/icons/..", "/<tool>/icons/..").
-function isHubPath(p) {
-  return p === '/' || p === '/index.html' || p === '/tools.js' || p === '/manifest.webmanifest' ||
-    /^\/icons\//.test(p) || /^\/[^/]+\/icons\//.test(p);
+// Hub-owned paths only: the page, its data file, and icon folders ("icons/..", "<tool>/icons/..").
+function isHubPath(pathname) {
+  if (!pathname.startsWith(SCOPE)) return false;
+  const r = pathname.slice(SCOPE.length);
+  return r === '' || r === 'index.html' || r === 'tools.js' || r === 'manifest.webmanifest' ||
+    /^icons\//.test(r) || /^[^/]+\/icons\//.test(r);
 }
 
 self.addEventListener('install', (event) => {
@@ -45,15 +42,17 @@ self.addEventListener('fetch', (event) => {
 
   // Page navigations: network first so new tools appear, cached hub shell when offline
   if (req.mode === 'navigate') {
-    if (url.origin !== self.location.origin || (url.pathname !== '/' && url.pathname !== '/index.html')) return;
+    if (url.origin !== self.location.origin) return;
+    const r = url.pathname.startsWith(SCOPE) ? url.pathname.slice(SCOPE.length) : null;
+    if (r !== '' && r !== 'index.html') return; // tool pages are handled by the tool's own worker
     event.respondWith(
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE_VERSION).then((c) => c.put('/index.html', copy));
+          caches.open(CACHE_VERSION).then((c) => c.put(SCOPE + 'index.html', copy));
           return res;
         })
-        .catch(() => caches.match('/index.html').then((r) => r || caches.match('/')))
+        .catch(() => caches.match(SCOPE + 'index.html').then((res) => res || caches.match(SCOPE)))
     );
     return;
   }

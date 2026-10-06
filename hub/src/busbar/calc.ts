@@ -72,7 +72,7 @@ export type Face = {
 }
 
 // Hot surface facing up. Below Ra = 10⁴ the spreadsheet falls back to Nu = 1 (pure conduction).
-function topNu(Ra: number): [number, Correlation] {
+export function topNu(Ra: number): [number, Correlation] {
   if (Ra < 1e4) return [1, { id: 'top-low', formula: 'Nu = 1', range: 'Ra < 10⁴ (conduction limit)', inRange: true }]
   if (Ra <= 1e7)
     return [0.54 * Ra ** 0.25, { id: 'top-lam', formula: 'Nu = 0.54 Ra^(1/4)', range: '10⁴ ≤ Ra ≤ 10⁷', inRange: true }]
@@ -83,7 +83,7 @@ function topNu(Ra: number): [number, Correlation] {
 }
 
 // Hot surface facing down. Same conduction fallback below the correlation's range.
-function bottomNu(Ra: number): [number, Correlation] {
+export function bottomNu(Ra: number): [number, Correlation] {
   if (Ra < 1e5)
     return [1, { id: 'bottom-low', formula: 'Nu = 1', range: 'Ra < 10⁵ (conduction limit)', inRange: true }]
   return [
@@ -93,7 +93,7 @@ function bottomNu(Ra: number): [number, Correlation] {
 }
 
 // Vertical wall, Churchill and Chu.
-function sideNu(Ra: number, Pr: number): [number, Correlation] {
+export function sideNu(Ra: number, Pr: number): [number, Correlation] {
   const pr = 1 + (0.492 / Pr) ** (9 / 16)
   if (Ra < 1e9)
     return [
@@ -224,6 +224,17 @@ export function solve(inp: Inputs): Result {
 // What the spreadsheet does: a single pass with the edge thickness typed in by hand.
 export function evaluateAt(inp: Inputs, assumedThickness: number): Result {
   return evaluate(inp, assumedThickness)
+}
+
+// ---- Resistivity at operating temperature ----
+
+export type Conductor = { rho20: number; tempCoeff: number } // Ω·m at 20 °C, 1/K
+export const COPPER: Conductor = { rho20: 1.724e-8, tempCoeff: 0.00393 }
+export const ALUMINIUM: Conductor = { rho20: 2.82e-8, tempCoeff: 0.00403 }
+
+// ρ(T) = ρ₂₀ [1 + α (T − 20 °C)]
+export function resistivityAt(c: Conductor, tC: number): number {
+  return c.rho20 * (1 + c.tempCoeff * (tC - 20))
 }
 
 export const STANDARD_THICKNESSES_MM = [0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50]

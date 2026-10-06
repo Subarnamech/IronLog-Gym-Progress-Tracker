@@ -1,6 +1,6 @@
 /* Busbar Sizing service worker — scope: the busbar/ folder only (e.g. "/busbar/" or "/repo/busbar/").
    Bump CACHE_VERSION every time the tool is rebuilt so installed copies update. */
-const CACHE_VERSION = 'busbar-v1';
+const CACHE_VERSION = 'busbar-v2';
 const BASE = new URL(self.registration.scope).pathname; // derived from where this worker is registered
 const ASSETS = new URL('../assets/', self.registration.scope).pathname; // the shared build output
 const SHELL = [

@@ -14,8 +14,12 @@ omniporta/                 the site is served from this folder (the repo root)
     manifest.webmanifest   Iron Log app: name "Iron Log", scope /ironlog/
     sw.js                  Iron Log service worker (scope /ironlog/)
     icons/                 Iron Log icons
+  busbar/
+    index.html             Busbar Sizing, BUILT from hub/ (don't edit by hand)
+    manifest.webmanifest, sw.js, icons/   written by hand, like any other tool
   hub/                     hub source: Vite + React + Tailwind + shadcn/ui
     src/App.tsx            the hub page
+    busbar/index.html, src/busbar/   the Busbar Sizing tool (calc.ts holds the maths)
     src/components/ui/     shadcn/ui components (add more with `npx shadcn@latest add <name>`)
   tools/
     add_tool.py            adds a new tool (folder, manifest, worker, icons, hub entry)
@@ -36,6 +40,9 @@ npm run build    # writes ../index.html and ../assets/
 `npm run build` replaces `index.html` and `assets/` in the repo root. Commit those along with your
 source changes, and bump `CACHE_VERSION` in `sw.js`. Adding a tool only touches `tools.js`, so it
 needs no rebuild.
+
+Busbar Sizing is built alongside the hub: the same `npm run build` writes `busbar/index.html`.
+After changing it, bump `CACHE_VERSION` in `busbar/sw.js` as well.
 
 Iron Log is not part of the build. It is one static file styled with the same shadcn/ui theme
 tokens in plain CSS; edit `ironlog/index.html` directly.
@@ -104,7 +111,7 @@ replace the icons in `public/budget/icons/` (same file names and sizes), then pu
 ## Updating later
 
 - Changed Iron Log? Bump `CACHE_VERSION` in `ironlog/sw.js` (`ironlog-v5` to `ironlog-v6`).
-- Changed the hub? Rebuild it (see above) and bump `CACHE_VERSION` in `sw.js` (`omniporta-v4` to `omniporta-v5`).
+- Changed the hub? Rebuild it (see above) and bump `CACHE_VERSION` in `sw.js` (`omniporta-v5` to `omniporta-v6`).
 - Then push to GitHub (or `firebase deploy --only hosting`).
 
 ## Test locally

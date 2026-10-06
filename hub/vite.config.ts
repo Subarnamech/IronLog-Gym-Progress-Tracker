@@ -24,7 +24,12 @@ function serveRepoRoot(): Plugin {
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
         const pathname = decodeURIComponent((req.url ?? '').split('?')[0])
-        if (!/^\/(tools\.js|manifest\.webmanifest|icons\/|[^/]+\/(icons\/|index\.html$|$))/.test(pathname)) {
+        if (!/^\/(tools\.js|manifest\.webmanifest|icons\/|[^/]+\/(icons\/|manifest\.webmanifest$|index\.html$|$))/.test(pathname)) {
+          return next()
+        }
+        // Tools built here (hub/<slug>/index.html) are Vite's to serve; only their static files come from the root.
+        const slug = pathname.split('/')[1]
+        if (/^\/[^/]+\/(index\.html)?$/.test(pathname) && fs.existsSync(path.join(import.meta.dirname, slug, 'index.html'))) {
           return next()
         }
         let file = path.join(repoRoot, pathname)
@@ -65,5 +70,13 @@ export default defineConfig({
     // emptyOutDir must stay off: the root also holds the tools and this source folder.
     outDir: repoRoot,
     emptyOutDir: false,
+    // One page per entry: the hub, plus each tool that is built with it. A tool's page is written
+    // to <slug>/index.html, next to its hand-written manifest, service worker and icons.
+    rollupOptions: {
+      input: {
+        hub: path.resolve(import.meta.dirname, 'index.html'),
+        busbar: path.resolve(import.meta.dirname, 'busbar/index.html'),
+      },
+    },
   },
 })

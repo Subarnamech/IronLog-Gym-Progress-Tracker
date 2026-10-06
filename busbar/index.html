@@ -3,16 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OmniPorta</title>
-    <meta name="description" content="One place to open all your tools." />
+    <title>Busbar Sizing</title>
+    <meta name="description" content="Work out how thick a busbar needs to be for a given current and temperature rise." />
 
-    <!-- PWA: the OmniPorta hub app (every tool). Each tool has its own separate manifest. -->
+    <!-- PWA: Busbar Sizing's own app identity (separate from the OmniPorta hub) -->
     <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="OmniPorta" />
+    <meta name="apple-mobile-web-app-title" content="Busbar Sizing" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
@@ -28,14 +28,12 @@
         document.documentElement.classList.toggle('dark', t === 'dark');
       })();
     </script>
-    <script type="module" crossorigin src="./assets/hub-Fu1cJZ8O.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime-CbXtAM7H.js">
-    <link rel="modulepreload" crossorigin href="./assets/theme-DkM-Mmqt.js">
-    <link rel="stylesheet" crossorigin href="./assets/theme-D5GNyYRp.css">
+    <script type="module" crossorigin src="../assets/busbar-UabNckha.js"></script>
+    <link rel="modulepreload" crossorigin href="../assets/rolldown-runtime-CbXtAM7H.js">
+    <link rel="modulepreload" crossorigin href="../assets/theme-DkM-Mmqt.js">
+    <link rel="stylesheet" crossorigin href="../assets/theme-D5GNyYRp.css">
   </head>
   <body>
     <div id="root"></div>
-    <!-- The tool list lives outside the bundle so tools/add_tool.py can edit it without a rebuild -->
-    <script src="./tools.js"></script>
   </body>
 </html>

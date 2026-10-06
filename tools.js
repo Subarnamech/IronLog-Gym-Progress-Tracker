@@ -12,5 +12,11 @@ window.OMNIPORTA_TOOLS = /* TOOLS:START */ [
     "name": "Iron Log",
     "description": "Log sets, track lifting progress and progress photos, and sync your training across devices.",
     "category": "Fitness"
+  },
+  {
+    "slug": "busbar",
+    "name": "Busbar Sizing",
+    "description": "Work out how thick a busbar needs to be for a given current and temperature rise.",
+    "category": "Electrical"
   }
 ] /* TOOLS:END */;

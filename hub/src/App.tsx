@@ -15,6 +15,7 @@ import {
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { Input } from '@/components/ui/input'
 import { Kbd } from '@/components/ui/kbd'
+import { useTheme } from '@/lib/theme'
 
 type Tool = {
   slug: string
@@ -42,21 +43,6 @@ const isStandalone =
 const isIOS =
   /iphone|ipad|ipod/i.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-
-function useTheme() {
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'))
-  function toggle() {
-    const next = !dark
-    document.documentElement.classList.toggle('dark', next)
-    try {
-      localStorage.setItem('omniporta-theme', next ? 'dark' : 'light')
-    } catch {
-      // private mode: the choice just doesn't persist
-    }
-    setDark(next)
-  }
-  return { dark, toggle }
-}
 
 // Install OmniPorta (the hub app). Never offered when already running as an installed app.
 function useInstall() {

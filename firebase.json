@@ -1,9 +1,9 @@
 {
   "hosting": {
-    "public": "public",
+    "public": ".",
     "cleanUrls": false,
     "trailingSlash": true,
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": ["firebase.json", "README.md", "**/.*", "**/node_modules/**", "hub/**", "tools/**"],
     "headers": [
       {
         "source": "**/sw.js",

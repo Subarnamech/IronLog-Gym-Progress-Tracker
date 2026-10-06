@@ -3,23 +3,42 @@
 One hub site/app that opens all your tools. Iron Log is the first tool.
 
 ```
-omniporta/
-  firebase.json            Firebase Hosting config (serves ./public)
-  public/
-    index.html             the OmniPorta hub
-    tools.js               the list of tools (one card per entry)
-    manifest.webmanifest   OmniPorta app: name "OmniPorta", scope /
-    sw.js                  hub service worker (scope /)
-    icons/                 OmniPorta icons
-    ironlog/
-      index.html           Iron Log (your app, with the Transformation Log lock)
-      manifest.webmanifest Iron Log app: name "Iron Log", scope /ironlog/
-      sw.js                Iron Log service worker (scope /ironlog/)
-      icons/               Iron Log icons
+omniporta/                 the site is served from this folder (the repo root)
+  index.html, assets/      the OmniPorta hub, BUILT from hub/ (don't edit by hand)
+  tools.js                 the list of tools (one row per entry)
+  manifest.webmanifest     OmniPorta app: name "OmniPorta", scope /
+  sw.js                    hub service worker (scope /)
+  icons/                   OmniPorta icons
+  ironlog/
+    index.html             Iron Log (single static file, with the Transformation Log lock)
+    manifest.webmanifest   Iron Log app: name "Iron Log", scope /ironlog/
+    sw.js                  Iron Log service worker (scope /ironlog/)
+    icons/                 Iron Log icons
+  hub/                     hub source: Vite + React + Tailwind + shadcn/ui
+    src/App.tsx            the hub page
+    src/components/ui/     shadcn/ui components (add more with `npx shadcn@latest add <name>`)
   tools/
-    add_tool.py            adds a new tool (folder, manifest, worker, icons, hub card)
+    add_tool.py            adds a new tool (folder, manifest, worker, icons, hub entry)
     make_icons.py          regenerates the OmniPorta and Iron Log icons
 ```
+
+## Changing the hub
+
+The hub is a React app using [shadcn/ui](https://ui.shadcn.com/). You need Node.js 20 or newer.
+
+```
+cd hub
+npm install      # first time only
+npm run dev      # live preview at http://localhost:5173/
+npm run build    # writes ../index.html and ../assets/
+```
+
+`npm run build` replaces `index.html` and `assets/` in the repo root. Commit those along with your
+source changes, and bump `CACHE_VERSION` in `sw.js`. Adding a tool only touches `tools.js`, so it
+needs no rebuild.
+
+Iron Log is not part of the build. It is one static file styled with the same shadcn/ui theme
+tokens in plain CSS; edit `ironlog/index.html` directly.
 
 ## Deploy
 
@@ -84,8 +103,8 @@ replace the icons in `public/budget/icons/` (same file names and sizes), then pu
 
 ## Updating later
 
-- Changed Iron Log? Bump `CACHE_VERSION` in `public/ironlog/sw.js` (`ironlog-v3` to `ironlog-v4`).
-- Changed the hub? Bump `CACHE_VERSION` in `public/sw.js` (`omniporta-v1` to `omniporta-v2`).
+- Changed Iron Log? Bump `CACHE_VERSION` in `ironlog/sw.js` (`ironlog-v4` to `ironlog-v5`).
+- Changed the hub? Rebuild it (see above) and bump `CACHE_VERSION` in `sw.js` (`omniporta-v2` to `omniporta-v3`).
 - Then push to GitHub (or `firebase deploy --only hosting`).
 
 ## Test locally

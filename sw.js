@@ -3,23 +3,33 @@
    Tools (e.g. ironlog/) register their own, more specific service workers, which take over
    inside their folders. This worker deliberately ignores everything under a tool's folder.
    Bump CACHE_VERSION whenever you change the hub files. */
-const CACHE_VERSION = 'omniporta-v1';
+const CACHE_VERSION = 'omniporta-v2';
 const SCOPE = new URL(self.registration.scope).pathname; // e.g. "/" or "/repo/"
 const SHELL = ['', 'index.html', 'tools.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'].map((p) => SCOPE + p);
 const CDN_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
-// Hub-owned paths only: the page, its data file, and icon folders ("icons/..", "<tool>/icons/..").
+// Hub-owned paths only: the page, its data file, its built bundle ("assets/..") and icon folders
+// ("icons/..", "<tool>/icons/..").
 function isHubPath(pathname) {
   if (!pathname.startsWith(SCOPE)) return false;
   const r = pathname.slice(SCOPE.length);
   return r === '' || r === 'index.html' || r === 'tools.js' || r === 'manifest.webmanifest' ||
-    /^icons\//.test(r) || /^[^/]+\/icons\//.test(r);
+    /^assets\//.test(r) || /^icons\//.test(r) || /^[^/]+\/icons\//.test(r);
+}
+
+// The bundle's file names are hashed by the build, so read them out of the page instead of listing them.
+function bundleFiles(cache) {
+  return cache.match(SCOPE + 'index.html')
+    .then((res) => (res ? res.text() : ''))
+    .then((html) => Array.from(html.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g), (m) => SCOPE + m[1]));
 }
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then((cache) => cache.addAll(SHELL)).then(() => self.skipWaiting())
+    caches.open(CACHE_VERSION)
+      .then((cache) => cache.addAll(SHELL).then(() => bundleFiles(cache)).then((files) => cache.addAll(files)))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -27,7 +37,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
       // Remove old hub caches and the pre-hub "ironlog-v1/v2" caches that used to live at the root.
-      // Tool caches written by the tool's own worker at the current version ("ironlog-v3") are left alone.
+      // Tool caches written by the tool's own worker at its current version ("ironlog-v3" and later) are left alone.
       .then((keys) => Promise.all(keys.filter((k) =>
         (k.startsWith('omniporta-') && k !== CACHE_VERSION) || k === 'ironlog-v1' || k === 'ironlog-v2'
       ).map((k) => caches.delete(k))))

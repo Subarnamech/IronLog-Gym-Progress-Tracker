@@ -1,6 +1,6 @@
 /* Iron Log service worker — scope: the ironlog/ folder only (e.g. "/ironlog/" or "/repo/ironlog/").
    Bump CACHE_VERSION every time you change ironlog/index.html so installed copies update. */
-const CACHE_VERSION = 'ironlog-v4';
+const CACHE_VERSION = 'ironlog-v5';
 const BASE = new URL(self.registration.scope).pathname; // derived from where this worker is registered
 const SHELL = [
   BASE,

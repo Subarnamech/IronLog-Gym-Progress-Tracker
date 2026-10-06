@@ -161,7 +161,7 @@ export default function App() {
   }, [])
 
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-svh w-full max-w-[110rem] flex-col px-4 sm:px-6 lg:px-8 2xl:px-12">
       <header className="flex h-14 items-center justify-between gap-3 md:h-16">
         <a href="./" className="flex items-center gap-2.5 font-semibold tracking-tight" aria-label="OmniPorta home">
           <span className="grid size-7 place-items-center rounded-md bg-neutral-950 text-neutral-50 ring-1 ring-foreground/10">
@@ -212,7 +212,7 @@ export default function App() {
         </div>
 
         {results.length > 0 ? (
-          <ul className="mt-3 grid gap-0.5 md:mt-6 md:grid-cols-2 md:gap-4 lg:grid-cols-3" aria-label="Tools">
+          <ul className="mt-3 grid gap-0.5 md:mt-6 md:grid-cols-2 md:gap-4 lg:grid-cols-3 xl:grid-cols-4 min-[1700px]:grid-cols-5" aria-label="Tools">
             {results.map((t) => (
               <ToolRow key={t.slug} tool={t} />
             ))}

@@ -106,13 +106,18 @@
     color:var(--foreground);
     font-family:'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
-    min-height:100vh;
+    zoom:var(--ui-zoom, 1);
+    min-height:calc(100vh / var(--ui-zoom, 1));
     padding:0 20px 80px;
     overflow-x:hidden;
   }
   button, input, select, textarea{font:inherit; color:inherit;}
   .hidden{display:none !important;}
-  .wrap{max-width:1180px; margin:0 auto;}
+  .wrap{max-width:1760px; margin:0 auto;}
+  @media (min-width:1024px){ body{padding:0 32px 80px;} }
+  @media (min-width:1500px){ body{padding:0 48px 80px;} .grid{--log-w-default:440px;} }
+  /* Large monitors: scale the whole interface up so it doesn't sit small in the middle of the screen. */
+  @media (min-width:1900px){ :root{--ui-zoom:1.2;} }
 
   /* ---- Header ---- */
   header{
@@ -322,7 +327,7 @@
   .photo-reminder .btn-row{display:flex; gap:8px; flex:none;}
 
   /* ---- Log tab layout ---- */
-  .grid{display:grid; grid-template-columns: var(--log-w, 380px) 10px 1fr; column-gap:6px;}
+  .grid{display:grid; grid-template-columns: var(--log-w, var(--log-w-default, 380px)) 10px 1fr; column-gap:6px;}
   .grid > .card{min-width:0;}
   @media (max-width:780px){ .grid{grid-template-columns:1fr; row-gap:16px;} }
 
@@ -1484,7 +1489,7 @@ function autofillFromPreviousSession(){
   resizer.addEventListener('pointermove', (e) => {
     if(!dragging) return;
     const gridRect = gridEl.getBoundingClientRect();
-    setWidth(e.clientX - gridRect.left);
+    setWidth((e.clientX - gridRect.left) / uiZoom());
   });
   function stopDrag(){
     dragging = false;
@@ -1493,6 +1498,10 @@ function autofillFromPreviousSession(){
   resizer.addEventListener('pointerup', stopDrag);
   resizer.addEventListener('pointercancel', stopDrag);
 })();
+
+// Pointer positions are in screen pixels, but sizes set in CSS are multiplied by the
+// large-monitor zoom on <body>, so drag distances have to be divided by it.
+function uiZoom(){ return parseFloat(getComputedStyle(document.body).zoom) || 1; }
 
 // Drag-to-resize chart boxes (replaces width/height sliders)
 function bindChartResize(handle, axis, min, max){
@@ -1505,14 +1514,14 @@ function bindChartResize(handle, axis, min, max){
     handle.setPointerCapture(e.pointerId);
     startPos = axis === 'width' ? e.clientX : e.clientY;
     const rect = svg.getBoundingClientRect();
-    startSize = axis === 'width' ? rect.width : rect.height;
+    startSize = (axis === 'width' ? rect.width : rect.height) / uiZoom();
   });
   handle.addEventListener('pointermove', (e) => {
     if(!dragging) return;
     const svg = document.getElementById(handle.dataset.target);
     if(!svg) return;
     const pos = axis === 'width' ? e.clientX : e.clientY;
-    const newSize = Math.max(min, Math.min(max, startSize + (pos - startPos)));
+    const newSize = Math.max(min, Math.min(max, startSize + (pos - startPos) / uiZoom()));
     if(axis === 'width') svg.style.maxWidth = 'none';
     svg.style[axis] = newSize + 'px';
   });

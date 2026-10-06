@@ -117,6 +117,13 @@
     --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Large monitors: scale the whole interface up so it doesn't sit small in the middle of the screen. */
+@media (min-width: 1900px) {
+  html {
+    font-size: 120%;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

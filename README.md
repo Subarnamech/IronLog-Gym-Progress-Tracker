@@ -103,8 +103,8 @@ replace the icons in `public/budget/icons/` (same file names and sizes), then pu
 
 ## Updating later
 
-- Changed Iron Log? Bump `CACHE_VERSION` in `ironlog/sw.js` (`ironlog-v4` to `ironlog-v5`).
-- Changed the hub? Rebuild it (see above) and bump `CACHE_VERSION` in `sw.js` (`omniporta-v3` to `omniporta-v4`).
+- Changed Iron Log? Bump `CACHE_VERSION` in `ironlog/sw.js` (`ironlog-v5` to `ironlog-v6`).
+- Changed the hub? Rebuild it (see above) and bump `CACHE_VERSION` in `sw.js` (`omniporta-v4` to `omniporta-v5`).
 - Then push to GitHub (or `firebase deploy --only hosting`).
 
 ## Test locally

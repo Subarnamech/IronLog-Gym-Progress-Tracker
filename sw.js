@@ -3,7 +3,7 @@
    Tools (e.g. ironlog/) register their own, more specific service workers, which take over
    inside their folders. This worker deliberately ignores everything under a tool's folder.
    Bump CACHE_VERSION whenever you change the hub files. */
-const CACHE_VERSION = 'omniporta-v2';
+const CACHE_VERSION = 'omniporta-v3';
 const SCOPE = new URL(self.registration.scope).pathname; // e.g. "/" or "/repo/"
 const SHELL = ['', 'index.html', 'tools.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'].map((p) => SCOPE + p);

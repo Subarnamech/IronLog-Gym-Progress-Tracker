@@ -107,7 +107,7 @@ function ToolRow({ tool }: { tool: Tool }) {
     <li>
       <a
         href={base}
-        className="group flex items-center gap-4 rounded-xl px-3 py-3 outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 sm:px-4"
+        className="group flex h-full items-center gap-4 rounded-xl px-3 py-3 outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 md:items-start md:bg-card md:p-4 md:ring-1 md:ring-foreground/10 md:hover:bg-muted/60"
       >
         <img
           src={base + 'icons/icon-192.png'}
@@ -126,7 +126,7 @@ function ToolRow({ tool }: { tool: Tool }) {
             <p className="mt-0.5 text-sm text-pretty text-muted-foreground">{tool.description}</p>
           )}
         </div>
-        <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+        <ChevronRightIcon className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 md:mt-1" />
       </a>
     </li>
   )
@@ -161,8 +161,8 @@ export default function App() {
   }, [])
 
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-2xl flex-col px-4 sm:px-6">
-      <header className="flex h-14 items-center justify-between gap-3">
+    <div className="mx-auto flex min-h-svh w-full max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
+      <header className="flex h-14 items-center justify-between gap-3 md:h-16">
         <a href="./" className="flex items-center gap-2.5 font-semibold tracking-tight" aria-label="OmniPorta home">
           <span className="grid size-7 place-items-center rounded-md bg-neutral-950 text-neutral-50 ring-1 ring-foreground/10">
             <PortalMark className="size-5" />
@@ -182,16 +182,17 @@ export default function App() {
         </div>
       </header>
 
-      <main className="flex-1 pt-8 pb-16 sm:pt-12">
-        <div className="flex items-baseline justify-between gap-4 px-3 sm:px-4">
+      <main className="flex-1 pt-8 pb-16 md:pt-12">
+        <div className="md:flex md:items-center md:justify-between md:gap-6">
+        <div className="flex items-baseline justify-between gap-3 px-3 md:justify-start md:px-0">
           <h1 className="text-2xl font-semibold tracking-tight">Tools</h1>
           <p className="text-sm text-muted-foreground tabular-nums" aria-live="polite">
             {term ? `${results.length} of ${TOOLS.length}` : TOOLS.length}
           </p>
         </div>
 
-        <div className="relative mt-4 px-3 sm:px-4">
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-5.5 size-4 -translate-y-1/2 text-muted-foreground sm:left-6.5" />
+        <div className="relative mt-4 px-3 md:mt-0 md:w-80 md:px-0">
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-5.5 size-4 -translate-y-1/2 text-muted-foreground md:left-2.5" />
           <label htmlFor="q" className="sr-only">
             Search tools
           </label>
@@ -206,17 +207,18 @@ export default function App() {
             onKeyDown={(e) => e.key === 'Escape' && setQuery('')}
             className="h-9 pr-9 pl-8.5"
           />
-          <Kbd className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 sm:right-6">/</Kbd>
+          <Kbd className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 md:right-2">/</Kbd>
+        </div>
         </div>
 
         {results.length > 0 ? (
-          <ul className="mt-3 flex flex-col gap-0.5" aria-label="Tools">
+          <ul className="mt-3 grid gap-0.5 md:mt-6 md:grid-cols-2 md:gap-4 lg:grid-cols-3" aria-label="Tools">
             {results.map((t) => (
               <ToolRow key={t.slug} tool={t} />
             ))}
           </ul>
         ) : (
-          <Empty className="mt-3">
+          <Empty className="mt-3 md:mt-6">
             <EmptyHeader>
               <EmptyTitle>{term ? `Nothing matches “${query.trim()}”` : 'No tools yet'}</EmptyTitle>
               <EmptyDescription>
@@ -240,7 +242,7 @@ export default function App() {
         )}
       </main>
 
-      <footer className="border-t px-3 py-5 text-sm text-pretty text-muted-foreground sm:px-4">
+      <footer className="border-t px-3 py-5 text-sm text-pretty text-muted-foreground md:px-0">
         Install from this page to get every tool in one app. To install a single tool on its own, open it first and
         install from there.
       </footer>

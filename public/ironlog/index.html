@@ -4,24 +4,50 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Iron Log — Gym Progress Tracker</title>
-<!-- PWA: installable app metadata -->
-<link rel="manifest" href="/manifest.webmanifest">
+<!-- PWA: Iron Log's own app identity (separate from the OmniPorta hub) -->
+<link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#141417">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Iron Log">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <script>
-  // Register the service worker (only works over https:// or localhost)
+  // Opened from the installed Iron Log app (start_url has ?source=pwa) -> behave as a standalone app:
+  // no "back to OmniPorta" link. Remembered for the tab/app session.
+  var ironlogStandalone = false;
+  try {
+    if (/[?&]source=pwa\b/.test(location.search)) sessionStorage.setItem('ironlog-standalone', '1');
+    ironlogStandalone = sessionStorage.getItem('ironlog-standalone') === '1';
+  } catch (e) {
+    ironlogStandalone = /[?&]source=pwa\b/.test(location.search);
+  }
+  if (ironlogStandalone) document.documentElement.classList.add('standalone-app');
+
+  // Register Iron Log's own service worker (only works over https:// or localhost).
+  // Its scope is /ironlog/, so it never touches the OmniPorta hub.
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('/sw.js').catch(function (err) {
+      navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function (err) {
         console.warn('Service worker registration failed:', err);
       });
     });
   }
+
+  // "Install Iron Log" button (Settings menu) once the browser says it can install.
+  var ironlogInstallEvt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    ironlogInstallEvt = e;
+    var b = document.getElementById('installAppBtn');
+    if (b) b.classList.remove('hidden');
+  });
+  window.addEventListener('appinstalled', function () {
+    ironlogInstallEvt = null;
+    var b = document.getElementById('installAppBtn');
+    if (b) b.classList.add('hidden');
+  });
 </script>
 <!-- Firebase (Auth + Firestore) — enables login, multi-device sync, and offline support -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -87,6 +113,10 @@
   }
   .brand h1 span{color:var(--ember);}
   .brand p{color:var(--chalk-dim); font-size:13px; margin-top:6px; letter-spacing:0.5px;}
+  .omni-back{display:inline-block; margin-bottom:10px; font-size:12.5px; color:var(--chalk-dim); text-decoration:none; opacity:.85;}
+  .omni-back:hover{color:var(--chalk); opacity:1;}
+  .standalone-app .omni-back{display:none;}
+  #installAppBtn.hidden{display:none !important;}
 
   .settings-wrap{position:relative;}
   .settings-btn{white-space:nowrap;}
@@ -729,6 +759,7 @@
 
   <header>
     <div class="brand">
+      <a class="omni-back" href="/" title="Back to all OmniPorta tools">← OmniPorta</a><br>
       <h1>IRON<span>LOG</span></h1>
       <p>SETS LOGGED. WEIGHT TRACKED. NO EXCUSES.</p>
     </div>
@@ -742,6 +773,7 @@
           </div>
           <div class="settings-sep"></div>
           <div class="settings-group">
+            <button class="ghost-btn hidden" id="installAppBtn" type="button">📲 Install Iron Log</button>
             <button class="ghost-btn" id="howToBtn">📖 How To Use</button>
             <button class="ghost-btn" id="lockSettingsBtn">🔒 Photo Lock</button>
           </div>
@@ -4004,6 +4036,14 @@ $lock('lockBioToggleBtn').addEventListener('click', async () => {
   try{ cfg.credId = await registerBiometric(); saveLockCfg(cfg); }
   catch(e){ alert("Couldn't turn on Face ID / fingerprint on this device."); }
   openLockSettings();
+});
+
+document.getElementById('installAppBtn').addEventListener('click', async () => {
+  if(!ironlogInstallEvt) return;
+  ironlogInstallEvt.prompt();
+  try{ await ironlogInstallEvt.userChoice; }catch(e){}
+  ironlogInstallEvt = null;
+  document.getElementById('installAppBtn').classList.add('hidden');
 });
 
 auth.onAuthStateChanged(user => {
